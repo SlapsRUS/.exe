@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K1N0S.exe</title>
+<style>
+  html, body {
+    margin: 0;
+    background: black;
+    color: #90ee90;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+  }
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: black;
+    z-index: 100;
+    color: #90ee90;
+  }
+  .hidden { display: none !important; }
+  #terminal {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    padding: 20px;
+    display: none;
+  }
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    background-color: #90ee90;
+    animation: blink 1s step-start infinite;
+  }
+  @keyframes blink {
+    50% { background-color: transparent; }
+  }
+  #login-screen input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #90ee90;
+    color: #90ee90;
+    font-family: Consolas, monospace;
+    font-size: 18px;
+    text-align: center;
+  }
+  .error {
+    color: #ff4c4c;
+    margin-top: 10px;
+  }
+  #lang {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: black;
+    color: #90ee90;
+    font-family: Consolas, monospace;
+    border: 1px solid #90ee90;
+    padding: 5px;
+  }
+</style>
+</head>
+<body>
+<div id="glitch" class="screen">EDEN</div>
+<div id="login-screen" class="screen hidden">
+  <div style="text-align:center">
+    <div>ENTER PASSCODE:</div>
+    <input id="passcode" type="password" autofocus autocomplete="off" />
+    <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
+  </div>
+</div>
+<select id="lang">
+  <option value="en">EN</option>
+  <option value="es">ES</option>
+  <option value="ph">PH</option>
+  <option value="fr">FR</option>
+  <option value="de">DE</option>
+</select>
+<pre id="terminal"></pre>
+<script>
+const langLines = {
+"en": ['C:\\Users\\KINOS> Welcome, establishing link...', 'C:\\Users\\KINOS> Link established.', '', 'C:\\Users\\KINOS> Transmission LIVE █'],
+"es": ['C:\\Users\\KINOS> Bienvenido, estableciendo enlace...', 'C:\\Users\\KINOS> Enlace establecido.', '', 'C:\\Users\\KINOS> Transmisión EN VIVO █'],
+"ph": ['C:\\Users\\KINOS> Maligayang pagdating, nagtataguyod ng link...', 'C:\\Users\\KINOS> Naitatag ang link.', '', 'C:\\Users\\KINOS> LIVE ang Transmisyon █'],
+"fr": ['C:\\Users\\KINOS> Bienvenue, établissement du lien...', 'C:\\Users\\KINOS> Lien établi.', '', 'C:\\Users\\KINOS> Transmission EN DIRECT █'],
+"de": ['C:\\Users\\KINOS> Willkommen, Verbindung wird hergestellt...', 'C:\\Users\\KINOS> Verbindung hergestellt.', '', 'C:\\Users\\KINOS> ÜBERTRAGUNG LIVE █']};
+
+setTimeout(() => {
+  document.getElementById("glitch").classList.add("hidden");
+  document.getElementById("login-screen").classList.remove("hidden");
+}, 1800);
+
+const input = document.getElementById('passcode');
+const login = document.getElementById('login-screen');
+const terminal = document.getElementById('terminal');
+const error = document.getElementById('error-msg');
+const lang = document.getElementById('lang');
+let clickCount = 0;
+let lineIndex = 0;
+let charIndex = 0;
+let typingLine = "";
+let lines = langLines["en"];
+
+function unlockTerminal() {
+  if (input.value === '1719') {
+    login.classList.add("hidden");
+    terminal.style.display = 'block';
+    typeLine();
+  } else {
+    error.classList.remove("hidden");
+    input.value = '';
+  }
+}
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') unlockTerminal();
+});
+input.addEventListener('change', unlockTerminal);
+
+lang.addEventListener('change', function() {
+  lines = langLines[this.value];
+  resetTerminal();
+  typeLine();
+});
+
+function resetTerminal() {
+  lineIndex = 0;
+  charIndex = 0;
+  typingLine = "";
+  terminal.innerHTML = "";
+}
+
+function typeLine() {
+  if (lineIndex >= lines.length) return;
+  const currentLine = lines[lineIndex];
+  if (charIndex < currentLine.length) {
+    typingLine += currentLine.charAt(charIndex);
+    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    charIndex++;
+    setTimeout(typeLine, 30);
+  } else {
+    typingLine += "\n";
+    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    lineIndex++;
+    charIndex = 0;
+    setTimeout(typeLine, 400);
+  }
+}
+
+document.addEventListener("click", function(e) {
+  if (e.target.id === "cursor") {
+    clickCount++;
+    if (clickCount >= 3) {
+      typingLine += "> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n";
+      terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    }
+  }
+});
+</script>
+</body></html>

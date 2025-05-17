@@ -206,7 +206,10 @@ function resetTerminal() {
 }
 
 function typeLine() {
-  if (lineIndex >= lines.length) return revealManifesto();
+  if (lineIndex >= lines.length) {
+    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    return;
+  }
   const currentLine = lines[lineIndex];
   if (charIndex < currentLine.length) {
     typingLine += currentLine.charAt(charIndex);
@@ -242,9 +245,7 @@ document.addEventListener("click", function(e) {
   }
 });
 
-document.getElementById("revealTrigger").addEventListener("click", function() {
-  revealManifesto();
-});
+
 
 </script>
 </body>

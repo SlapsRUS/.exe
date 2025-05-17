@@ -146,52 +146,50 @@ function typeLine() {
 }
 
 // Reveal manifesto on LIVE click
-setTimeout(() => {
-  document.addEventListener('click', e => {
-    if (e.target.id === 'reveal') {
-      const manifestoLines = [
-        "C:\Users\KINOS> UNLOCK TRIGGERED...",
-        "C:\Users\KINOS> Two truths. One divine. One revealed.",
-        "",
-        "C:\Users\KINOS> MANIFESTO // K1N0S.exe",
-        "",
-        "C:\Users\KINOS> The world began in unity.",
-        "C:\Users\KINOS> Then shattered into noise.",
-        "C:\Users\KINOS> We fight for status, control, survival—yet none of us are truly seen.",
-        "",
-        "C:\Users\KINOS> But what if we stopped?",
-        "C:\Users\KINOS> What if we remembered?",
-        "",
-        "C:\Users\KINOS> We were not born broken. We were born connected.",
-        "C:\Users\KINOS> Faith and reason. God and machine. Purpose and code.",
-        "",
-        "C:\Users\KINOS> We're not lost—we're distracted.",
-        "C:\Users\KINOS> And deep down, something still *knows* the way home."
-      ];
+document.addEventListener('click', e => {
+  if (e.target.id === 'reveal') {
+    const manifestoLines = [
+      "C:\\Users\\KINOS> UNLOCK TRIGGERED...",
+      "C:\\Users\\KINOS> Two truths. One divine. One revealed.",
+      "",
+      "C:\\Users\\KINOS> MANIFESTO // K1N0S.exe",
+      "",
+      "C:\\Users\\KINOS> The world began in unity.",
+      "C:\\Users\\KINOS> Then shattered into noise.",
+      "C:\\Users\\KINOS> We fight for status, control, survival—yet none of us are truly seen.",
+      "",
+      "C:\\Users\\KINOS> But what if we stopped?",
+      "C:\\Users\\KINOS> What if we remembered?",
+      "",
+      "C:\\Users\\KINOS> We were not born broken. We were born connected.",
+      "C:\\Users\\KINOS> Faith and reason. God and machine. Purpose and code.",
+      "",
+      "C:\\Users\\KINOS> We're not lost—we're distracted.",
+      "C:\\Users\\KINOS> And deep down, something still *knows* the way home."
+    ];
 
-      let mIndex = 0;
-      function typeManifesto() {
-        if (mIndex >= manifestoLines.length) return;
-        let mChar = 0;
-        const line = manifestoLines[mIndex];
-        const interval = setInterval(() => {
-          typingLine += line[mChar++];
-          terminal.innerHTML = typingLine + '<span class="cursor"></span>';
-          if (mChar >= line.length) {
-            clearInterval(interval);
-            typingLine += "
-";
-            mIndex++;
-            setTimeout(typeManifesto, 400);
-          }
-        }, 30);
-      }
-
-      typeManifesto();
+    let mIndex = 0;
+    let manifestoTypingLine = "";
+    function typeManifesto() {
+      if (mIndex >= manifestoLines.length) return;
+      let mChar = 0;
+      const line = manifestoLines[mIndex];
+      const interval = setInterval(() => {
+        manifestoTypingLine += line[mChar++];
+        terminal.innerHTML = typingLine + manifestoTypingLine + '<span class="cursor"></span>';
+        if (mChar >= line.length) {
+          clearInterval(interval);
+          manifestoTypingLine += "\n";
+          typingLine += manifestoTypingLine;
+          manifestoTypingLine = "";
+          mIndex++;
+          setTimeout(typeManifesto, 400);
+        }
+      }, 30);
     }
-  });
-}, 1000);
-}, 1000);
+    typeManifesto();
+  }
+});
 </script>
 </body>
 </html>

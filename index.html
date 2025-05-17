@@ -74,7 +74,7 @@
   </style>
 </head>
 <body>
-<div id="glitch" class="screen">EDEN</div>
+<div id="glitch" class="screen" style="font-size: 4vw; letter-spacing: 0.2em; text-align: center; white-space: pre-wrap;"></div>
 
 <div id="login-screen" class="screen hidden">
   <div style="text-align:center">
@@ -135,23 +135,30 @@ const langLines = {
 
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
-  let interval = setInterval(() => {
+  let frame = 0;
+  const totalFrames = 24;
+  let currentScramble = "";
+
+  function scrambleFrame() {
     const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let scramble = "";
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 80; i++) {
       scramble += charset.charAt(Math.floor(Math.random() * charset.length));
     }
     glitchText.innerText = scramble;
-  }, 100);
-
-  setTimeout(() => {
-    clearInterval(interval);
-    glitchText.innerText = "APPLE";
-    setTimeout(() => {
-      glitchText.classList.add("hidden");
-      document.getElementById("login-screen").classList.remove("hidden");
-    }, 800);
-  }, 2000);
+    glitchText.style.fontSize = `${4 + (totalFrames - frame) * 0.5}vw`;
+    if (++frame < totalFrames) {
+      setTimeout(scrambleFrame, 100);
+    } else {
+      glitchText.innerText = "APPLE";
+      glitchText.style.fontSize = "4vw";
+      setTimeout(() => {
+        glitchText.classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+      }, 1000);
+    }
+  }
+  scrambleFrame();
 }, 300);
 
 const input = document.getElementById('passcode');

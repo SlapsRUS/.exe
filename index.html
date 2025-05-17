@@ -151,8 +151,7 @@ setTimeout(() => {
       for (let c = 0; c < columns; c++) {
         line += charset.charAt(Math.floor(Math.random() * charset.length));
       }
-      matrix += line + "
-";
+      matrix += line + "\n";
     }
     glitchText.innerText = matrix;
     frame++;

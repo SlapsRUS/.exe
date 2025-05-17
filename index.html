@@ -135,6 +135,7 @@ const langLines = {
 
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
+  const glitchSound = document.getElementById("glitchSound");
   glitchText.style.fontSize = "1.8vw";
   glitchText.style.lineHeight = "1.3";
   glitchText.style.letterSpacing = "0.1em";
@@ -177,9 +178,12 @@ setTimeout(() => {
       glitchText.style.textAlign = "center";
       glitchText.style.fontSize = "3vw";
       setTimeout(() => {
+        glitchSound.play();
         glitchText.classList.add("hidden");
-        document.getElementById("login-screen").classList.remove("hidden");
-      }, 1000);
+        document.getElementById("glitchCanvas").classList.remove("hidden");
+        startGlitchCanvas(() => {
+  document.getElementById("login-screen").classList.remove("hidden");
+});
     }
   }, 80);
 }, 300);
@@ -267,6 +271,28 @@ function revealManifesto() {
 
 
 
+
+function startGlitchCanvas(callback) {
+  const canvas = document.getElementById("glitchCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let frame = 0;
+  const glitchLoop = setInterval(() => {
+    ctx.fillStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+    for (let i = 0; i < 100; i++) {
+      ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*300, 2);
+    }
+    frame++;
+    if (frame > 10) {
+      clearInterval(glitchLoop);
+      canvas.classList.add("hidden");
+      callback();
+    }
+  }, 80);
+}
 </script>
+<audio id="glitchSound" src="https://freesound.org/data/previews/337/337049_3232294-lq.mp3" preload="auto"></audio>
+<canvas id="glitchCanvas" class="screen hidden"></canvas>
 </body>
 </html>

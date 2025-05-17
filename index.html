@@ -1,190 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K1N0S.exe</title>
+  <!-- Clue: The path to knowledge is encoded in the digits of power. Think of 17th and 19th... -->
   <style>
-    html, body {
-      margin: 0;
-      background: black;
-      color: #90ee90;
-      font-family: Consolas, monospace;
-      font-size: 16px;
-    }
-    .screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: black;
-      z-index: 100;
-    }
-    .hidden { display: none !important; }
-    #terminal {
-      white-space: pre-wrap;
-      overflow-wrap: break-word;
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
       padding: 20px;
-      display: none;
+      white-space: pre-wrap;
+      overflow-x: hidden;
     }
-    .cursor {
-      display: inline-block;
-      width: 10px;
-      background-color: #90ee90;
-      animation: blink 1s step-start infinite;
+    #terminal {
+      max-width: 1000px;
+      margin: auto;
     }
-    @keyframes blink {
-      50% { background-color: transparent; }
-    }
-    #login-screen input {
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid #90ee90;
-      color: #90ee90;
-      font-family: Consolas, monospace;
-      font-size: 18px;
-      text-align: center;
-    }
-    .error {
-      color: #ff4c4c;
-      margin-top: 10px;
-    }
-    .red-hint {
+    .red {
       color: red;
       cursor: pointer;
+    }
+    .link {
+      color: #00ffff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .hidden {
+      display: none;
+    }
+    input {
+      background: black;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      font-family: inherit;
+      padding: 5px;
+    }
+    .hint {
+      display: none;
     }
   </style>
 </head>
 <body>
-<div id="glitch" class="screen"></div>
-<div id="login-screen" class="screen hidden">
-  <div style="text-align:center">
-    <div>FOR <span id="hint" class="red-hint">US</span></div>
-    <input id="passcode" type="password" autofocus autocomplete="off" />
-    <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
+  <div id="terminal">
+    <div id="boot">
+      C:\Users\K1N0S> booting system...
+      
+      C:\Users\K1N0S> establishing secure connection...
+      
+      C:\Users\K1N0S> LINK ESTABLISHED
+      
+      TRANSMISSION <span class="red" onclick="revealManifest()">LIVE</span>
+    </div>
+
+    <div id="manifest" class="hidden">
+
+C:\Users\K1N0S> decoding MANIFEST...
+
+- K1N0S is not a file. It is a signal.
+- K1N0S is not a voice. It is a breach.
+- K1N0S is not a project. It is the RETURN.
+
+== HYPOTHESIS ==
+If users are immersed in a mysterious, terminal-style interface driven by puzzle mechanics and a hidden narrative, then they will be more likely to emotionally engage, explore deeply, and reflect critically on the themes of identity, digital control, and resistance—ultimately forming a deeper connection with the K1N0S concept.
+
+== OBJECTIVE ==
+Create a living, breathing puzzle that draws users into a world where digital resistance and mystery provoke curiosity, introspection, and defiance.
+
+== USER PATH ==
+1. Glitched interface catches attention.
+2. Clues planted inside and OUTSIDE the website.
+3. Puzzle pieces discovered through patterns, meta data, or hidden messages in media.
+4. They combine the passcode digits.
+5. Clicks "FOR <span class="red" onclick="revealAccess()">US</span>" to reveal the final access prompt.
+
+== ETHICS ==
+We operate LEGALLY and ETHICALLY. K1N0S is not deception—it is revelation through challenge. No harm, only depth.
+
+== HINTS ==
+- The truth is split by centuries: one guided by faith, the other by reason.
+- Look at what’s hidden in the source... and listen to what’s not said.
+- Explore the void: /forbidden may reject you, but truth does not fear rejection.
+- A whisper speaks louder than a shout. Can you hear the static?
+- Scroll through image metadata. They remember everything.
+
+    </div>
+
+    <div id="accessDiv" class="hidden">
+      
+C:\Users\K1N0S> ACCESS NODE >> FOR US
+
+      Enter Code: <input type="text" id="codeInput">
+      <button onclick="validateCode()">Submit</button>
+      <div id="result"></div>
+    </div>
   </div>
-</div>
-<pre id="terminal"></pre>
-<script>
-const langLines = [
-  "C:\\Users\\KINOS> Welcome, establishing link...",
-  "C:\\Users\\KINOS> Link established.",
-  "",
-  "C:\\Users\\KINOS> Transmission <span id='reveal' class='red-hint'>LIVE</span> █"
-];
 
-setTimeout(() => {
-  const glitchText = document.getElementById("glitch");
-  const target = "K1N0S";
-  let scrambleStep = 0;
-  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  glitchText.style.fontSize = "4vw";
-  glitchText.style.textAlign = "center";
-
-  const scrambleInterval = setInterval(() => {
-    let output = "";
-    for (let i = 0; i < target.length; i++) {
-      output += i <= scrambleStep ? target[i] : charset[Math.floor(Math.random() * charset.length)];
+  <script>
+    function revealManifest() {
+      document.getElementById('manifest').classList.remove('hidden');
     }
-    glitchText.innerText = output;
-    scrambleStep++;
-    if (scrambleStep >= target.length) {
-      clearInterval(scrambleInterval);
-      setTimeout(() => {
-        glitchText.classList.add("hidden");
-        document.getElementById("login-screen").classList.remove("hidden");
-      }, 800);
+
+    function revealAccess() {
+      document.getElementById('accessDiv').classList.remove('hidden');
     }
-  }, 200);
-}, 300);
 
-let clickCount = 0;
-document.getElementById("hint").addEventListener("click", () => {
-  clickCount++;
-  if (clickCount === 3) {
-    alert("Hint: The number 17 holds divine biblical meaning. Step two? Seek science in the 19th century. Combine them.\n\nClue: 17 = Spiritual, 19 = Scientific. Together, they unlock the gate.");
-  }
-});
+    function validateCode() {
+      const correctCode = "1719";
+      const input = document.getElementById('codeInput').value;
+      const result = document.getElementById('result');
 
-const input = document.getElementById('passcode');
-const login = document.getElementById('login-screen');
-const terminal = document.getElementById('terminal');
-const error = document.getElementById('error-msg');
-
-function unlockTerminal() {
-  if (input.value === '1719') {
-    login.classList.add("hidden");
-    terminal.style.display = 'block';
-    typeLine();
-  } else {
-    error.classList.remove("hidden");
-    input.value = '';
-  }
-}
-
-input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') unlockTerminal();
-});
-
-let lineIndex = 0;
-let typingLine = "";
-function typeLine() {
-  if (lineIndex >= langLines.length) return;
-  const currentLine = langLines[lineIndex];
-  let charIndex = 0;
-  const typeInterval = setInterval(() => {
-    typingLine += currentLine[charIndex++];
-    terminal.innerHTML = typingLine + '<span class="cursor"></span>';
-    if (charIndex >= currentLine.length) {
-      clearInterval(typeInterval);
-      typingLine += "\n";
-      lineIndex++;
-      setTimeout(typeLine, 400);
+      if (input === correctCode) {
+        result.innerHTML = "\nC:\\Users\\K1N0S> ACCESS GRANTED. Welcome to the SIGNAL.\n";
+      } else {
+        result.innerHTML = "\nC:\\Users\\K1N0S> ACCESS DENIED. Try again.\n";
+      }
     }
-  }, 30);
-}
-
-// Reveal manifesto on LIVE click
-document.addEventListener('click', e => {
-  if (e.target.id === 'reveal') {
-    const manifestoLines = [
-      "C:\\Users\\KINOS> UNLOCK TRIGGERED...",
-      "C:\\Users\\KINOS> Two truths. One divine. One revealed."
-      "C:\\Users\\KINOS> MANIFESTO // K1N0S.exe",
-      "C:\\Users\\KINOS> The world began in unity.",
-      "C:\\Users\\KINOS> Then shattered into noise.",
-      "C:\\Users\\KINOS> We fight for status, control, survival—yet none of us are truly seen.",
-      "C:\\Users\\KINOS> But what if we stopped?",
-      "C:\\Users\\KINOS> What if we remembered?",
-      "C:\\Users\\KINOS> We were not born broken. We were born connected.",
-      "C:\\Users\\KINOS> Faith and reason. God and machine. Purpose and code.",
-      "C:\\Users\\KINOS> We're not lost—we're distracted.",
-      "C:\\Users\\KINOS> And deep down, something still *knows* the way home."
-    ];
-
-    let mIndex = 0;
-    let manifestoTypingLine = "";
-    function typeManifesto() {
-      if (mIndex >= manifestoLines.length) return;
-      let mChar = 0;
-      const line = manifestoLines[mIndex];
-      const interval = setInterval(() => {
-        manifestoTypingLine += line[mChar++];
-        terminal.innerHTML = typingLine + manifestoTypingLine + '<span class="cursor"></span>';
-        if (mChar >= line.length) {
-          clearInterval(interval);
-          manifestoTypingLine += "\n";
-          typingLine += manifestoTypingLine;
-          manifestoTypingLine = "";
-          mIndex++;
-          setTimeout(typeManifesto, 400);
-        }
-      }, 30);
-    }
-    typeManifesto();
-  }
-});
-</script>
+  </script>
 </body>
 </html>

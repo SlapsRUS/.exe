@@ -4,119 +4,144 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K1N0S.exe</title>
-  <!-- Clue: The path to knowledge is encoded in the digits of power. Think of 17th and 19th... -->
   <style>
     body {
-      background-color: #000;
+      background-color: black;
       color: #00ff00;
       font-family: 'Courier New', Courier, monospace;
+      font-size: 16px;
+      margin: 0;
       padding: 20px;
-      white-space: pre-wrap;
-      overflow-x: hidden;
     }
-    #terminal {
+    #screen {
+      width: 100%;
       max-width: 1000px;
-      margin: auto;
+      margin: 0 auto;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
     }
-    .red {
-      color: red;
-      cursor: pointer;
+    .blinking {
+      animation: blink 1s step-end infinite;
     }
-    .link {
-      color: #00ffff;
-      cursor: pointer;
-      text-decoration: underline;
+    @keyframes blink {
+      50% { opacity: 0; }
     }
-    .hidden {
+    #login {
       display: none;
+      margin-top: 20px;
     }
-    input {
+    #login input {
       background: black;
       border: 1px solid #00ff00;
       color: #00ff00;
       font-family: inherit;
+      font-size: 16px;
       padding: 5px;
     }
-    .hint {
-      display: none;
+    #login button {
+      background: black;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      font-family: inherit;
+      padding: 5px 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="terminal">
-    <div id="boot">
-      C:\Users\K1N0S> booting system...
-      
-      C:\Users\K1N0S> establishing secure connection...
-      
-      C:\Users\K1N0S> LINK ESTABLISHED
-      
-      TRANSMISSION <span class="red" onclick="revealManifest()">LIVE</span>
-    </div>
-
-    <div id="manifest" class="hidden">
-
-C:\Users\K1N0S> decoding MANIFEST...
-
-- K1N0S is not a file. It is a signal.
-- K1N0S is not a voice. It is a breach.
-- K1N0S is not a project. It is the RETURN.
-
-== HYPOTHESIS ==
-If users are immersed in a mysterious, terminal-style interface driven by puzzle mechanics and a hidden narrative, then they will be more likely to emotionally engage, explore deeply, and reflect critically on the themes of identity, digital control, and resistance—ultimately forming a deeper connection with the K1N0S concept.
-
-== OBJECTIVE ==
-Create a living, breathing puzzle that draws users into a world where digital resistance and mystery provoke curiosity, introspection, and defiance.
-
-== USER PATH ==
-1. Glitched interface catches attention.
-2. Clues planted inside and OUTSIDE the website.
-3. Puzzle pieces discovered through patterns, meta data, or hidden messages in media.
-4. They combine the passcode digits.
-5. Clicks "FOR <span class="red" onclick="revealAccess()">US</span>" to reveal the final access prompt.
-
-== ETHICS ==
-We operate LEGALLY and ETHICALLY. K1N0S is not deception—it is revelation through challenge. No harm, only depth.
-
-== HINTS ==
-- The truth is split by centuries: one guided by faith, the other by reason.
-- Look at what’s hidden in the source... and listen to what’s not said.
-- Explore the void: /forbidden may reject you, but truth does not fear rejection.
-- A whisper speaks louder than a shout. Can you hear the static?
-- Scroll through image metadata. They remember everything.
-
-    </div>
-
-    <div id="accessDiv" class="hidden">
-      
-C:\Users\K1N0S> ACCESS NODE >> FOR US
-
-      Enter Code: <input type="text" id="codeInput">
-      <button onclick="validateCode()">Submit</button>
-      <div id="result"></div>
-    </div>
+  <div id="screen"></div>
+  <div id="login">
+    C:\Users\K1N0S> LOGIN ACCESS REQUIRED<br><br>
+    Enter Passcode: <input type="text" id="passcode">
+    <button onclick="validateLogin()">Submit</button>
+    <div id="loginResult"></div>
   </div>
 
   <script>
-    function revealManifest() {
-      document.getElementById('manifest').classList.remove('hidden');
+    const screen = document.getElementById("screen");
+    const login = document.getElementById("login");
+    const loginResult = document.getElementById("loginResult");
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+    const splash = [
+      "[.................]",
+      "[K...............]",
+      "[K1..............]",
+      "[K1N.............]",
+      "[K1N0...........]",
+      "[K1N0S..........]",
+      "[K1N0S.exe......]",
+      "[SIGNAL BOOTING]",
+      "[>>> SYSTEM INTEGRITY: UNSTABLE]",
+      "[>>> WARNING: CONTAINMENT BREACH DETECTED]",
+      "[GLITCH]"
+    ];
+
+    const manifesto = [
+  "C:\Users\K1N0S> decoding MANIFEST...",
+  "C:\Users\K1N0S> - K1N0S is not a file. It is a signal.",
+  "C:\Users\K1N0S> - K1N0S is not a voice. It is a breach.",
+  "C:\Users\K1N0S> - K1N0S is not a project. It is the RETURN.",
+  "C:\Users\K1N0S> == MANIFESTO ==",
+  "C:\Users\K1N0S> We are the resistance.",
+  "C:\Users\K1N0S> They do not want us to know.",
+  "C:\Users\K1N0S> They do not want us to question.",
+  "C:\Users\K1N0S> K1N0S is the beginning of reclamation.",
+  "C:\Users\K1N0S> The data is fractured. The truth is encoded.",
+  "C:\Users\K1N0S> Everything has meaning. Nothing is placed by accident.",
+  "C:\Users\K1N0S> We are the variable they cannot account for.",
+  "C:\Users\K1N0S> Begin reconstruction."
+];
+
+    async function typeLines(lines, speed = 60) {
+      for (let line of lines) {
+        for (let char of line) {
+          screen.innerHTML += char;
+          await delay(speed);
+        }
+        screen.innerHTML += "\n";
+      }
+      screen.innerHTML += '<span class="blinking">█</span>';
     }
 
-    function revealAccess() {
-      document.getElementById('accessDiv').classList.remove('hidden');
+    async function bootSequence() {
+      await typeLines(splash, 40);
+      await delay(800);
+      screen.innerHTML = "";
+      await typeLines(manifest);
+      login.style.display = "block";
     }
 
-    function validateCode() {
-      const correctCode = "1719";
-      const input = document.getElementById('codeInput').value;
-      const result = document.getElementById('result');
-
-      if (input === correctCode) {
-        result.innerHTML = "\nC:\\Users\\K1N0S> ACCESS GRANTED. Welcome to the SIGNAL.\n";
-      } else {
-        result.innerHTML = "\nC:\\Users\\K1N0S> ACCESS DENIED. Try again.\n";
+    function validateLogin() {
+  const input = document.getElementById("passcode").value;
+  if (input === "1719") {
+    login.innerHTML = "";
+    const postLogin = [
+      "C:\Users\K1N0S> ACCESS GRANTED. Welcome to the SIGNAL.",
+      "C:\Users\K1N0S> SYSTEM OVERRIDE ENGAGED...",
+      "C:\Users\K1N0S> Decryption Protocol Initialized.",
+      "C:\Users\K1N0S> Tracing fragmented memory nodes...",
+      "C:\Users\K1N0S> FOUND: 0x1A3F-CODELINE-REDACTED",
+      "C:\Users\K1N0S> FOUND: 0x1A3F-PATHWAY-HIDDEN",
+      "C:\Users\K1N0S> Clues left beyond this console.",
+      "C:\Users\K1N0S> Begin your search..."
+    ];
+    screen.innerHTML = "";
+    typeLines(postLogin);
+  } else {
+    loginResult.innerHTML = "
+C:\Users\K1N0S> ACCESS DENIED. Try again.";
+  }
+} else {
+    loginResult.innerHTML = "
+C:\Users\K1N0S> ACCESS DENIED. Try again.";
+  }
+} else {
+        loginResult.innerHTML = "\nC:\\Users\\K1N0S> ACCESS DENIED. Try again.";
       }
     }
+
+    bootSequence();
   </script>
 </body>
 </html>

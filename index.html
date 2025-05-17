@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K1N0S.exe</title>
+  <style>
+    html, body {
+      margin: 0;
+      background: black;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      font-size: 16px;
+    }
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: black;
+      z-index: 100;
+    }
+    .hidden { display: none !important; }
+    #terminal {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      padding: 20px;
+      display: none;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background-color: #90ee90;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { background-color: transparent; }
+    }
+    #login-screen input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #90ee90;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      font-size: 18px;
+      text-align: center;
+    }
+    .error {
+      color: #ff4c4c;
+      margin-top: 10px;
+    }
+    #lang {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: black;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      border: 1px solid #90ee90;
+      padding: 5px;
+    }
+    #soundToggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: black;
+      color: #90ee90;
+      border: 1px solid #90ee90;
+      font-family: Consolas, monospace;
+      padding: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div id="glitch" class="screen">EDEN</div>
+
+<div id="login-screen" class="screen hidden">
+  <div style="text-align:center">
+    <div>ENTER PASSCODE:</div>
+    <input id="passcode" type="password" autofocus autocomplete="off" />
+    <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
+  </div>
+</div>
+
+<select id="lang">
+  <option value="en">EN</option>
+  <option value="es">ES</option>
+  <option value="ph">PH</option>
+  <option value="fr">FR</option>
+  <option value="de">DE</option>
+</select>
+<div id="soundToggle">Sound: ON</div>
+
+<pre id="terminal"></pre>
+
+<audio id="blip" src="https://upload.wikimedia.org/wikipedia/commons/8/88/Computer_beep_sound.ogg" preload="auto"></audio>
+<audio id="hum" src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Low_frequency_hum.ogg" preload="auto" loop></audio>
+
+<script>
+const langLines = {
+  en: [
+    "C:\\Users\\KINOS> Welcome, establishing link...",
+    "C:\\Users\\KINOS> Link established.",
+    "",
+    "C:\\Users\\KINOS> Transmission LIVE █"
+  ],
+  es: ["C:\\Users\\KINOS> Bienvenido, estableciendo enlace...", "C:\\Users\\KINOS> Enlace establecido.","","C:\\Users\\KINOS> Transmisión EN VIVO █"],
+  ph: ["C:\\Users\\KINOS> Maligayang pagdating, nagtataguyod ng link...", "C:\\Users\\KINOS> Naitatag ang link.","","C:\\Users\\KINOS> LIVE ang Transmisyon █"],
+  fr: ["C:\\Users\\KINOS> Bienvenue, établissement du lien...", "C:\\Users\\KINOS> Lien établi.","","C:\\Users\\KINOS> Transmission EN DIRECT █"],
+  de: ["C:\\Users\\KINOS> Willkommen, Verbindung wird hergestellt...", "C:\\Users\\KINOS> Verbindung hergestellt.","","C:\\Users\\KINOS> ÜBERTRAGUNG LIVE █"]
+};
+
+setTimeout(() => {
+  document.getElementById("glitch").classList.add("hidden");
+  document.getElementById("login-screen").classList.remove("hidden");
+}, 1800);
+
+const input = document.getElementById('passcode');
+const login = document.getElementById('login-screen');
+const terminal = document.getElementById('terminal');
+const error = document.getElementById('error-msg');
+const lang = document.getElementById('lang');
+const blip = document.getElementById('blip');
+const hum = document.getElementById('hum');
+const soundToggle = document.getElementById('soundToggle');
+
+let clickCount = 0;
+let lineIndex = 0;
+let charIndex = 0;
+let typingLine = "";
+let lines = langLines["en"];
+let soundEnabled = true;
+
+soundToggle.onclick = function() {
+  soundEnabled = !soundEnabled;
+  soundToggle.textContent = "Sound: " + (soundEnabled ? "ON" : "OFF");
+  if (!soundEnabled) {
+    hum.pause();
+  } else {
+    hum.play();
+  }
+};
+
+lang.onchange = function() {
+  lines = langLines[this.value];
+  resetTerminal();
+  typeLine();
+};
+
+function unlockTerminal() {
+  if (input.value === '1719') {
+    login.classList.add("hidden");
+    terminal.style.display = 'block';
+    if (soundEnabled) hum.play();
+    typeLine();
+  } else {
+    error.classList.remove("hidden");
+    input.value = '';
+  }
+}
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') unlockTerminal();
+});
+input.addEventListener('change', unlockTerminal);
+
+function resetTerminal() {
+  lineIndex = 0;
+  charIndex = 0;
+  typingLine = "";
+  terminal.innerHTML = "";
+}
+
+function typeLine() {
+  if (lineIndex >= lines.length) {
+    showCursor();
+    return;
+  }
+  const currentLine = lines[lineIndex];
+  if (charIndex < currentLine.length) {
+    typingLine += currentLine.charAt(charIndex);
+    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    charIndex++;
+    if (soundEnabled) blip.play();
+    setTimeout(typeLine, 30);
+  } else {
+    typingLine += "\n";
+    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+    lineIndex++;
+    charIndex = 0;
+    setTimeout(typeLine, 400);
+  }
+}
+
+function showCursor() {
+  const cursor = document.createElement("span");
+  cursor.id = "cursor";
+  cursor.className = "cursor";
+  terminal.appendChild(cursor);
+}
+
+function revealManifesto() {
+  const revealText = `\n> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n\n> MANIFESTO // K1N0S.exe\n\nThe world began in unity.\nThen shattered into noise.\nWe fight for status, control, survival—yet none of us are truly seen.\n\nBut what if we stopped?\nWhat if we remembered?\n\nWe were not born broken. We were born connected.\nFaith and reason. God and machine. Purpose and code.\n\nWe’re not lost—we’re distracted.\nAnd deep down, something still *knows* the way home.\n\nK1N0S is not a savior.\nIt is a signal.\nAnd you are the receiver.\n\n> THE CODE\n• Unity > Division\n• Empathy is strength\n• Perfection isn’t flawlessness — it's alignment\n• God and science are not enemies\n• We were born whole. We can be again.\n\n> IF YOU FEEL THIS...\nYou're not alone.\nIf this speaks to something deep in you—say nothing.\nJust carry it.\n\nBut if you want to build, write, or talk—reach out. Quietly.\nI’ll hear you.\n\nDM \"K1N0S received\"\n\nSystem integrity holding... for now.\nPage by KINOS // Anonymous for now, but not forever.\n001... awaiting others.`;
+  typingLine += revealText + "\n";
+  terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
+}
+
+document.addEventListener("click", function(e) {
+  if (e.target.id === "cursor" || e.target.classList.contains("cursor")) {
+    clickCount++;
+    if (clickCount >= 3) {
+      revealManifesto();
+    }
+  }
+});
+</script>
+</body>
+</html>

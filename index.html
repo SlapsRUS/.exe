@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,176 +37,82 @@
     @keyframes blink {
       50% { background-color: transparent; }
     }
-    #login-screen input {
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid #90ee90;
-      color: #90ee90;
+    #manifesto, #intro, #beliefs, #cta, #footer {
+      display: none;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      text-align: left;
       font-family: Consolas, monospace;
-      font-size: 18px;
-      text-align: center;
-    }
-    .error {
-      color: #ff4c4c;
-      margin-top: 10px;
-    }
-    #lang {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: black;
-      color: #90ee90;
-      font-family: Consolas, monospace;
-      border: 1px solid #90ee90;
-      padding: 5px;
-    }
-    #soundToggle {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      background: black;
-      color: #90ee90;
-      border: 1px solid #90ee90;
-      font-family: Consolas, monospace;
-      padding: 5px;
-      cursor: pointer;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-<div id="glitch" class="screen">EDEN</div>
 
-<div id="login-screen" class="screen hidden">
-  <div style="text-align:center">
-    <div>ENTER PASSCODE:</div>
-    <input id="passcode" type="password" autofocus autocomplete="off" />
-    <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
-  </div>
+<!-- Main Sections -->
+<div id="intro">
+This is not a movement. Not a brand. Not a savior.
+It’s a transmission.
+
+Something in you still believes we’re meant for more.
+This page exists because that part of you is still awake.
+
+Scroll with intention.
+Read with soul.
 </div>
 
-<select id="lang">
-  <option value="en">EN</option>
-  <option value="es">ES</option>
-  <option value="ph">PH</option>
-  <option value="fr">FR</option>
-  <option value="de">DE</option>
-</select>
-<div id="soundToggle">Sound: ON</div>
+<div id="manifesto">
+> MANIFESTO // K1N0S.exe
 
-<pre id="terminal"></pre>
+The world began in unity.
+Then shattered into noise.
+We fight for status, control, survival—yet none of us are truly seen.
 
-<!-- Sound FX -->
-<audio id="blip" src="https://upload.wikimedia.org/wikipedia/commons/8/88/Computer_beep_sound.ogg" preload="auto"></audio>
-<audio id="hum" src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Low_frequency_hum.ogg" preload="auto" loop></audio>
+But what if we stopped?
+What if we remembered?
 
-<script>
-const langLines = {
-  en: ["C:\\Users\\KINOS> Welcome, establishing link...",
-       "C:\\Users\\KINOS> Link established.",
-       "",
-       "C:\\Users\\KINOS> Transmission LIVE █"],
-  es: ["C:\\Users\\KINOS> Bienvenido, estableciendo enlace...",
-       "C:\\Users\\KINOS> Enlace establecido.",
-       "",
-       "C:\\Users\\KINOS> Transmisión EN VIVO █"],
-  ph: ["C:\\Users\\KINOS> Maligayang pagdating, nagtataguyod ng link...",
-       "C:\\Users\\KINOS> Naitatag ang link.",
-       "",
-       "C:\\Users\\KINOS> LIVE ang Transmisyon █"],
-  fr: ["C:\\Users\\KINOS> Bienvenue, établissement du lien...",
-       "C:\\Users\\KINOS> Lien établi.",
-       "",
-       "C:\\Users\\KINOS> Transmission EN DIRECT █"],
-  de: ["C:\\Users\\KINOS> Willkommen, Verbindung wird hergestellt...",
-       "C:\\Users\\KINOS> Verbindung hergestellt.",
-       "",
-       "C:\\Users\\KINOS> ÜBERTRAGUNG LIVE █"]
-};
+We were not born broken. We were born connected.
+Faith and reason. God and machine. Purpose and code.
 
-setTimeout(() => {
-  document.getElementById("glitch").classList.add("hidden");
-  document.getElementById("login-screen").classList.remove("hidden");
-}, 1800);
+We’re not lost—we’re distracted.
+And deep down, something still *knows* the way home.
 
-const input = document.getElementById('passcode');
-const login = document.getElementById('login-screen');
-const terminal = document.getElementById('terminal');
-const error = document.getElementById('error-msg');
-const lang = document.getElementById('lang');
-const blip = document.getElementById('blip');
-const hum = document.getElementById('hum');
-const soundToggle = document.getElementById('soundToggle');
+K1N0S is not a savior.
+It is a signal.
+And you are the receiver.
+</div>
 
-let clickCount = 0;
-let lineIndex = 0;
-let charIndex = 0;
-let typingLine = "";
-let lines = langLines["en"];
-let soundEnabled = true;
+<div id="beliefs">
+> THE CODE
 
-soundToggle.onclick = function() {
-  soundEnabled = !soundEnabled;
-  soundToggle.textContent = "Sound: " + (soundEnabled ? "ON" : "OFF");
-  if (!soundEnabled) hum.pause(); else hum.play();
-};
+• Unity > Division
+• Empathy is strength
+• Perfection isn’t flawlessness — it's alignment
+• God and science are not enemies
+• We were born whole. We can be again.
+</div>
 
-lang.onchange = function() {
-  lines = langLines[this.value];
-  resetTerminal();
-  typeLine();
-};
+<div id="cta">
+> IF YOU FEEL THIS...
 
-function unlockTerminal() {
-  if (input.value === '1719') {
-    login.classList.add("hidden");
-    terminal.style.display = 'block';
-    hum.play();
-    typeLine();
-  } else {
-    error.classList.remove("hidden");
-    input.value = '';
-  }
-}
+You're not alone.
+If this speaks to something deep in you—say nothing.
+Just carry it.
 
-input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') unlockTerminal();
-});
-input.addEventListener('change', unlockTerminal);
+But if you want to build, write, or talk—reach out. Quietly.
+I’ll hear you.
 
-function resetTerminal() {
-  lineIndex = 0;
-  charIndex = 0;
-  typingLine = "";
-  terminal.innerHTML = "";
-}
+DM "K1N0S received"
+</div>
 
-function typeLine() {
-  if (lineIndex >= lines.length) return;
-  const currentLine = lines[lineIndex];
-  if (charIndex < currentLine.length) {
-    typingLine += currentLine.charAt(charIndex);
-    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-    charIndex++;
-    if (soundEnabled) blip.play();
-    setTimeout(typeLine, 30);
-  } else {
-    typingLine += "\n";
-    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-    lineIndex++;
-    charIndex = 0;
-    setTimeout(typeLine, 400);
-  }
-}
+<div id="footer">
+System integrity holding... for now.
+Page by KINOS // Anonymous for now, but not forever.
+001... awaiting others.
+</div>
 
-document.addEventListener("click", function(e) {
-  if (e.target.id === "cursor") {
-    clickCount++;
-    if (clickCount >= 3) {
-      typingLine += "> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n";
-      terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-    }
-  }
-});
-</script>
+<!-- Future: Add JS to reveal these blocks as interactions unfold -->
+
 </body>
 </html>

@@ -73,3 +73,28 @@
     }
   </style>
 </head>
+<body>
+<div id="glitch" class="screen">EDEN</div>
+
+<div id="login-screen" class="screen hidden">
+  <div style="text-align:center">
+    <div>ENTER PASSCODE:</div>
+    <input id="passcode" type="password" autofocus autocomplete="off" />
+    <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
+  </div>
+</div>
+
+<select id="lang">
+  <option value="en">EN</option>
+  <option value="es">ES</option>
+  <option value="ph">PH</option>
+  <option value="fr">FR</option>
+  <option value="de">DE</option>
+</select>
+<div id="soundToggle">Sound: ON</div>
+
+<pre id="terminal"></pre>
+
+<!-- Sound FX -->
+<audio id="blip" src="https://upload.wikimedia.org/wikipedia/commons/8/88/Computer_beep_sound.ogg" preload="auto"></audio>
+<audio id="hum" src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Low_frequency_hum.ogg" preload="auto" loop></audio>

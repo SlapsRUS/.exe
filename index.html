@@ -135,30 +135,54 @@ const langLines = {
 
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
-  let frame = 0;
-  const totalFrames = 24;
-  let currentScramble = "";
+  glitchText.style.fontSize = "1.8vw";
+  glitchText.style.lineHeight = "1.3";
+  glitchText.style.letterSpacing = "0.1em";
+  glitchText.style.textAlign = "left";
 
-  function scrambleFrame() {
-    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let scramble = "";
-    for (let i = 0; i < 80; i++) {
-      scramble += charset.charAt(Math.floor(Math.random() * charset.length));
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const columns = 40;
+  const rows = 20;
+  let frame = 0;
+  let rainfallInterval = setInterval(() => {
+    let matrix = "";
+    for (let r = 0; r < rows; r++) {
+      let line = "";
+      for (let c = 0; c < columns; c++) {
+        line += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      matrix += line + "
+";
     }
-    glitchText.innerText = scramble;
-    glitchText.style.fontSize = `${4 + (totalFrames - frame) * 0.5}vw`;
-    if (++frame < totalFrames) {
-      setTimeout(scrambleFrame, 100);
-    } else {
-      glitchText.innerText = "APPLE";
-      glitchText.style.fontSize = "4vw";
+    glitchText.innerText = matrix;
+    frame++;
+    if (frame > 18) {
+      clearInterval(rainfallInterval);
+      glitchText.innerText = "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            K1N0S";
+      glitchText.style.textAlign = "center";
+      glitchText.style.fontSize = "3vw";
       setTimeout(() => {
         glitchText.classList.add("hidden");
         document.getElementById("login-screen").classList.remove("hidden");
       }, 1000);
     }
-  }
-  scrambleFrame();
+  }, 80);
 }, 300);
 
 const input = document.getElementById('passcode');

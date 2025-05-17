@@ -78,8 +78,8 @@
 
 <div id="login-screen" class="screen hidden">
   <div style="text-align:center">
-    <div style='color: red; cursor: pointer;' onclick='alert("Clue: Reflect on the divine and scientific awakenings of past centuries.")'>[hint]</div>
-    <div>ENTER PASSCODE:</div>
+    
+    <div>ENT<span title='Clue: Reflect on the divine and scientific awakenings of past centuries.' style='color:red;'>E</span>R PASSCODE:</div>
     <input id="passcode" type="password" autofocus autocomplete="off" />
     <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
   </div>
@@ -134,9 +134,24 @@ const langLines = {
 };
 
 setTimeout(() => {
-  document.getElementById("glitch").classList.add("hidden");
-  document.getElementById("login-screen").classList.remove("hidden");
-}, 1800);
+  const glitchText = document.getElementById("glitch");
+  let message = "EDEN";
+  let typed = "";
+  let index = 0;
+  function typeEden() {
+    if (index < message.length) {
+      typed += message[index++];
+      glitchText.innerText = typed;
+      setTimeout(typeEden, 100);
+    } else {
+      setTimeout(() => {
+        document.getElementById("glitch").classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+      }, 1000);
+    }
+  }
+  typeEden();
+}, 300);
 
 const input = document.getElementById('passcode');
 const login = document.getElementById('login-screen');

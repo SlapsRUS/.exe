@@ -149,9 +149,48 @@ function typeLine() {
 setTimeout(() => {
   document.addEventListener('click', e => {
     if (e.target.id === 'reveal') {
-      terminal.innerHTML += "\n> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n\n> MANIFESTO // K1N0S.exe\n\nThe world began in unity.\nThen shattered into noise.\nWe fight for status, control, survival—yet none of us are truly seen.\n\nBut what if we stopped?\nWhat if we remembered?\n\nWe were not born broken. We were born connected.\nFaith and reason. God and machine. Purpose and code.\n\nWe’re not lost—we’re distracted.\nAnd deep down, something still *knows* the way home.";
+      const manifestoLines = [
+        "C:\Users\KINOS> UNLOCK TRIGGERED...",
+        "C:\Users\KINOS> Two truths. One divine. One revealed.",
+        "",
+        "C:\Users\KINOS> MANIFESTO // K1N0S.exe",
+        "",
+        "C:\Users\KINOS> The world began in unity.",
+        "C:\Users\KINOS> Then shattered into noise.",
+        "C:\Users\KINOS> We fight for status, control, survival—yet none of us are truly seen.",
+        "",
+        "C:\Users\KINOS> But what if we stopped?",
+        "C:\Users\KINOS> What if we remembered?",
+        "",
+        "C:\Users\KINOS> We were not born broken. We were born connected.",
+        "C:\Users\KINOS> Faith and reason. God and machine. Purpose and code.",
+        "",
+        "C:\Users\KINOS> We're not lost—we're distracted.",
+        "C:\Users\KINOS> And deep down, something still *knows* the way home."
+      ];
+
+      let mIndex = 0;
+      function typeManifesto() {
+        if (mIndex >= manifestoLines.length) return;
+        let mChar = 0;
+        const line = manifestoLines[mIndex];
+        const interval = setInterval(() => {
+          typingLine += line[mChar++];
+          terminal.innerHTML = typingLine + '<span class="cursor"></span>';
+          if (mChar >= line.length) {
+            clearInterval(interval);
+            typingLine += "
+";
+            mIndex++;
+            setTimeout(typeManifesto, 400);
+          }
+        }, 30);
+      }
+
+      typeManifesto();
     }
   });
+}, 1000);
 }, 1000);
 </script>
 </body>

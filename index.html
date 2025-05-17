@@ -1,1 +1,75 @@
-<!-- Final working build of K1N0S.exe will be written here -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K1N0S.exe</title>
+  <style>
+    html, body {
+      margin: 0;
+      background: black;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      font-size: 16px;
+    }
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: black;
+      z-index: 100;
+    }
+    .hidden { display: none !important; }
+    #terminal {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      padding: 20px;
+      display: none;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background-color: #90ee90;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { background-color: transparent; }
+    }
+    #login-screen input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #90ee90;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      font-size: 18px;
+      text-align: center;
+    }
+    .error {
+      color: #ff4c4c;
+      margin-top: 10px;
+    }
+    #lang {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: black;
+      color: #90ee90;
+      font-family: Consolas, monospace;
+      border: 1px solid #90ee90;
+      padding: 5px;
+    }
+    #soundToggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: black;
+      color: #90ee90;
+      border: 1px solid #90ee90;
+      font-family: Consolas, monospace;
+      padding: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>

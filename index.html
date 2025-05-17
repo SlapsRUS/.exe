@@ -105,7 +105,7 @@ const langLines = {
     "C:\\Users\\KINOS> Welcome, establishing link...",
     "C:\\Users\\KINOS> Link established.",
     "",
-    "C:\Users\KINOS> Transmission <span id='revealTrigger' style='color: red; cursor: pointer;'>LIVE</span> █"
+    "C:\Users\KINOS> Transmission LIVE █"
   ],
   es: [
     "C:\\Users\\KINOS> Bienvenido, estableciendo enlace...",
@@ -232,18 +232,7 @@ function revealManifesto() {
   terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
 }
 
-document.addEventListener("click", function(e) {
-  if (e.target.id === "cursor-blink" || e.target.classList.contains("cursor")) {
-    clickCount++;
-    if (clickCount >= 3) {
-      typingLine += "> UNLOCK TRIGGERED...
-> Two truths. One divine. One revealed.
-";
-      terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-      revealManifesto();
-    }
-  }
-});
+
 
 
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,102 +50,72 @@
       color: #ff4c4c;
       margin-top: 10px;
     }
-    #lang {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: black;
-      color: #90ee90;
-      font-family: Consolas, monospace;
-      border: 1px solid #90ee90;
-      padding: 5px;
-    }
-    #soundToggle {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      background: black;
-      color: #90ee90;
-      border: 1px solid #90ee90;
-      font-family: Consolas, monospace;
-      padding: 5px;
+    .red-hint {
+      color: red;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-<div id="glitch" class="screen">EDEN</div>
+<div id="glitch" class="screen"></div>
 <div id="login-screen" class="screen hidden">
   <div style="text-align:center">
-    <div>ENTER PASSCODE:</div>
+    <div>FOR <span id="hint" class="red-hint">US</span></div>
     <input id="passcode" type="password" autofocus autocomplete="off" />
     <div id="error-msg" class="error hidden">ACCESS DENIED. TRY AGAIN.</div>
   </div>
 </div>
-<select id="lang">
-  <option value="en">EN</option>
-  <option value="es">ES</option>
-  <option value="ph">PH</option>
-  <option value="fr">FR</option>
-  <option value="de">DE</option>
-</select>
-<div id="soundToggle">Sound: ON</div>
 <pre id="terminal"></pre>
-<audio id="blip" src="https://upload.wikimedia.org/wikipedia/commons/8/88/Computer_beep_sound.ogg" preload="auto"></audio>
-<audio id="hum" src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Low_frequency_hum.ogg" preload="auto" loop></audio>
 <script>
-const langLines = {
-  en: [
-    "C:\\Users\\KINOS> Welcome, establishing link...",
-    "C:\\Users\\KINOS> Link established.",
-    "",
-    "C:\\Users\\KINOS> Transmission LIVE █"
-  ],
-  es: ["C:\\Users\\KINOS> Bienvenido, estableciendo enlace...", "C:\\Users\\KINOS> Enlace establecido.","","C:\\Users\\KINOS> Transmisión EN VIVO █"],
-  ph: ["C:\\Users\\KINOS> Maligayang pagdating, nagtataguyod ng link...", "C:\\Users\\KINOS> Naitatag ang link.","","C:\\Users\\KINOS> LIVE ang Transmisyon █"],
-  fr: ["C:\\Users\\KINOS> Bienvenue, établissement du lien...", "C:\\Users\\KINOS> Lien établi.","","C:\\Users\\KINOS> Transmission EN DIRECT █"],
-  de: ["C:\\Users\\KINOS> Willkommen, Verbindung wird hergestellt...", "C:\\Users\\KINOS> Verbindung hergestellt.","","C:\\Users\\KINOS> ÜBERTRAGUNG LIVE █"]
-};
+const langLines = [
+  "C:\\Users\\KINOS> Welcome, establishing link...",
+  "C:\\Users\\KINOS> Link established.",
+  "",
+  "C:\\Users\\KINOS> Transmission <span id='reveal' class='red-hint'>LIVE</span> █"
+];
 
 setTimeout(() => {
-  document.getElementById("glitch").classList.add("hidden");
-  document.getElementById("login-screen").classList.remove("hidden");
-}, 1800);
+  const glitchText = document.getElementById("glitch");
+  const target = "K1N0S";
+  let scrambleStep = 0;
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  glitchText.style.fontSize = "4vw";
+  glitchText.style.textAlign = "center";
+
+  const scrambleInterval = setInterval(() => {
+    let output = "";
+    for (let i = 0; i < target.length; i++) {
+      output += i <= scrambleStep ? target[i] : charset[Math.floor(Math.random() * charset.length)];
+    }
+    glitchText.innerText = output;
+    scrambleStep++;
+    if (scrambleStep >= target.length) {
+      clearInterval(scrambleInterval);
+      setTimeout(() => {
+        glitchText.classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+      }, 800);
+    }
+  }, 200);
+}, 300);
+
+let clickCount = 0;
+document.getElementById("hint").addEventListener("click", () => {
+  clickCount++;
+  if (clickCount === 3) {
+    alert("Hint: The number 17 holds divine biblical meaning. Step two? Seek science in the 19th century. Combine them.\n\nClue: 17 = Spiritual, 19 = Scientific. Together, they unlock the gate.");
+  }
+});
 
 const input = document.getElementById('passcode');
 const login = document.getElementById('login-screen');
 const terminal = document.getElementById('terminal');
 const error = document.getElementById('error-msg');
-const lang = document.getElementById('lang');
-const blip = document.getElementById('blip');
-const hum = document.getElementById('hum');
-const soundToggle = document.getElementById('soundToggle');
-
-let clickCount = 0;
-let lineIndex = 0;
-let charIndex = 0;
-let typingLine = "";
-let lines = langLines["en"];
-let soundEnabled = true;
-let cursorInserted = false;
-
-soundToggle.onclick = function() {
-  soundEnabled = !soundEnabled;
-  soundToggle.textContent = "Sound: " + (soundEnabled ? "ON" : "OFF");
-  if (!soundEnabled) hum.pause(); else hum.play();
-};
-
-lang.onchange = function() {
-  lines = langLines[this.value];
-  resetTerminal();
-  typeLine();
-};
 
 function unlockTerminal() {
   if (input.value === '1719') {
     login.classList.add("hidden");
     terminal.style.display = 'block';
-    if (soundEnabled) hum.play();
     typeLine();
   } else {
     error.classList.remove("hidden");
@@ -157,53 +126,33 @@ function unlockTerminal() {
 input.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') unlockTerminal();
 });
-input.addEventListener('change', unlockTerminal);
 
-function resetTerminal() {
-  lineIndex = 0;
-  charIndex = 0;
-  typingLine = "";
-  terminal.innerHTML = "";
-  cursorInserted = false;
-}
-
+let lineIndex = 0;
+let typingLine = "";
 function typeLine() {
-  if (lineIndex >= lines.length) {
-    if (!cursorInserted) {
-      terminal.innerHTML += "<span id='cursor' class='cursor'></span>";
-      cursorInserted = true;
+  if (lineIndex >= langLines.length) return;
+  const currentLine = langLines[lineIndex];
+  let charIndex = 0;
+  const typeInterval = setInterval(() => {
+    typingLine += currentLine[charIndex++];
+    terminal.innerHTML = typingLine + '<span class="cursor"></span>';
+    if (charIndex >= currentLine.length) {
+      clearInterval(typeInterval);
+      typingLine += "\n";
+      lineIndex++;
+      setTimeout(typeLine, 400);
     }
-    return;
-  }
-  const currentLine = lines[lineIndex];
-  if (charIndex < currentLine.length) {
-    typingLine += currentLine.charAt(charIndex);
-    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-    charIndex++;
-    if (soundEnabled) blip.play();
-    setTimeout(typeLine, 30);
-  } else {
-    typingLine += "\n";
-    terminal.innerHTML = typingLine + "<span id='cursor' class='cursor'></span>";
-    lineIndex++;
-    charIndex = 0;
-    setTimeout(typeLine, 400);
-  }
+  }, 30);
 }
 
-function revealManifesto() {
-  const revealText = `\n> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n\n> MANIFESTO // K1N0S.exe\n\nThe world began in unity.\nThen shattered into noise.\nWe fight for status, control, survival—yet none of us are truly seen.\n\nBut what if we stopped?\nWhat if we remembered?\n\nWe were not born broken. We were born connected.\nFaith and reason. God and machine. Purpose and code.\n\nWe’re not lost—we’re distracted.\nAnd deep down, something still *knows* the way home.\n\nK1N0S is not a savior.\nIt is a signal.\nAnd you are the receiver.\n\n> THE CODE\n• Unity > Division\n• Empathy is strength\n• Perfection isn’t flawlessness — it's alignment\n• God and science are not enemies\n• We were born whole. We can be again.\n\n> IF YOU FEEL THIS...\nYou're not alone.\nIf this speaks to something deep in you—say nothing.\nJust carry it.\n\nBut if you want to build, write, or talk—reach out. Quietly.\nI’ll hear you.\n\nDM \"K1N0S received\"\n\nSystem integrity holding... for now.\nPage by KINOS // Anonymous for now, but not forever.\n001... awaiting others.`;
-  terminal.innerHTML += revealText + "<span id='cursor' class='cursor'></span>";
-}
-
-document.addEventListener("click", function(e) {
-  if (e.target.id === "cursor" || e.target.classList.contains("cursor")) {
-    clickCount++;
-    if (clickCount >= 3) {
-      revealManifesto();
+// Reveal manifesto on LIVE click
+setTimeout(() => {
+  document.addEventListener('click', e => {
+    if (e.target.id === 'reveal') {
+      terminal.innerHTML += "\n> UNLOCK TRIGGERED...\n> Two truths. One divine. One revealed.\n\n> MANIFESTO // K1N0S.exe\n\nThe world began in unity.\nThen shattered into noise.\nWe fight for status, control, survival—yet none of us are truly seen.\n\nBut what if we stopped?\nWhat if we remembered?\n\nWe were not born broken. We were born connected.\nFaith and reason. God and machine. Purpose and code.\n\nWe’re not lost—we’re distracted.\nAnd deep down, something still *knows* the way home.";
     }
-  }
-});
+  });
+}, 1000);
 </script>
 </body>
 </html>

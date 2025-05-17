@@ -135,22 +135,18 @@ const langLines = {
 
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
-  let message = "EDEN";
-  let typed = "";
-  let index = 0;
-  function typeEden() {
-    if (index < message.length) {
-      typed += message[index++];
-      glitchText.innerText = typed;
-      setTimeout(typeEden, 100);
-    } else {
-      setTimeout(() => {
-        document.getElementById("glitch").classList.add("hidden");
-        document.getElementById("login-screen").classList.remove("hidden");
-      }, 1000);
-    }
-  }
-  typeEden();
+  let interval = setInterval(() => {
+    glitchText.innerText = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    glitchText.innerText = "EDEN";
+    setTimeout(() => {
+      glitchText.classList.add("hidden");
+      document.getElementById("login-screen").classList.remove("hidden");
+    }, 800);
+  }, 2000);
 }, 300);
 
 const input = document.getElementById('passcode');

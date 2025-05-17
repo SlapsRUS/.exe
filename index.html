@@ -136,12 +136,17 @@ const langLines = {
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
   let interval = setInterval(() => {
-    glitchText.innerText = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let scramble = "";
+    for (let i = 0; i < 6; i++) {
+      scramble += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    glitchText.innerText = scramble;
   }, 100);
 
   setTimeout(() => {
     clearInterval(interval);
-    glitchText.innerText = "EDEN";
+    glitchText.innerText = "APPLE";
     setTimeout(() => {
       glitchText.classList.add("hidden");
       document.getElementById("login-screen").classList.remove("hidden");

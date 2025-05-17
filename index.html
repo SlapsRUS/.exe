@@ -135,14 +135,27 @@ const langLines = {
 
 setTimeout(() => {
   const glitchText = document.getElementById("glitch");
-  glitchText.innerText = "APPLE";
-  glitchText.style.textAlign = "center";
-  glitchText.style.fontSize = "4vw";
+  glitchText.innerText = "";
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let interval = setInterval(() => {
+    let scramble = "";
+    for (let i = 0; i < 12; i++) {
+      scramble += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    glitchText.innerText = scramble;
+  }, 100);
+
   setTimeout(() => {
-    glitchText.classList.add("hidden");
-    document.getElementById("login-screen").classList.remove("hidden");
-  }, 800);
-}, 2000);
+    clearInterval(interval);
+    glitchText.innerText = "K1N0S";
+    glitchText.style.textAlign = "center";
+    glitchText.style.fontSize = "4vw";
+    setTimeout(() => {
+      glitchText.classList.add("hidden");
+      document.getElementById("login-screen").classList.remove("hidden");
+    }, 800);
+  }, 2000);
+}, 300);
     }
   }, 80);
 }, 300);
@@ -236,27 +249,8 @@ function revealManifesto() {
 
 
 
-function startGlitchCanvas(callback) {
-  const canvas = document.getElementById("glitchCanvas");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  let frame = 0;
-  const glitchLoop = setInterval(() => {
-    ctx.fillStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
-    for (let i = 0; i < 100; i++) {
-      ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*300, 2);
-    }
-    frame++;
-    if (frame > 10) {
-      clearInterval(glitchLoop);
-      canvas.classList.add("hidden");
-      callback();
-    }
-  }, 80);
-}
 </script>
-<audio id="glitchSound" src="https://freesound.org/data/previews/337/337049_3232294-lq.mp3" preload="auto"></audio>
-<canvas id="glitchCanvas" class="screen hidden"></canvas>
+
+
 </body>
 </html>

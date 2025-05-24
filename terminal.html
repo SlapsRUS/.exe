@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - K1N0S</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    input[type="text"] {
+      background-color: black;
+      border: 1px solid white;
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 10px;
+      font-size: 1.2em;
+      width: 250px;
+      text-align: center;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Enter Access Code</h1>
+  <input type="text" id="codeInput" placeholder="----" maxlength="4">
+  <div class="error" id="errorMsg"></div>
+
+  <script>
+    let attempts = 0;
+    const maxAttempts = 3;
+    const correctCode = "1719";
+
+    const input = document.getElementById("codeInput");
+    const errorMsg = document.getElementById("errorMsg");
+
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        const value = input.value.trim();
+        if (value === correctCode) {
+          window.location.href = "access_granted.html";
+        } else {
+          attempts++;
+          if (attempts < maxAttempts) {
+            errorMsg.textContent = `ERROR... ${attempts}/3 Attempts before IP ban`;
+          } else {
+            errorMsg.textContent = "FINAL ERROR... IP ban initiated.";
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K1N0S Terminal</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 10px;
+    }
+    #terminal {
+      white-space: pre-wrap;
+    }
+    .input-line {
+      display: inline;
+    }
+    input {
+      background: black;
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+      width: 80%;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal">
+    C:\Users\KINOS&gt; <span class="input-line"><input type="text" id="cmdInput" autofocus /></span>
+  </div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const cmdInput = document.getElementById('cmdInput');
+
+    const responses = {
+      "help": "Available commands:\nhelp\ndir\nconnect\nrun k1nos\ndecode 1719\nexit",
+      "dir": "Volume in drive C has no label\nDirectory of C:\\Users\\KINOS\\
+\nk1nos.exe    secret.log    glyphs.sys",
+      "connect": "ERROR: Access denied. Source unstable.",
+      "run k1nos": "Initializing consciousness...\n[!] Memory thread fragmented\n[!] Reassembly incomplete",
+      "decode 1719": "Decoding access...\nResult: 'I AM WITHIN'",
+      "exit": "Session terminated."
+    };
+
+    cmdInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        const cmd = cmdInput.value.trim().toLowerCase();
+        let output = "\nC:\\Users\\KINOS> " + cmd + "\n";
+        output += responses[cmd] || "Unrecognized command.";
+        terminal.innerHTML += output + "\n\nC:\\Users\\KINOS> ";
+        cmdInput.value = "";
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    });
+  </script>
+</body>
+</html>

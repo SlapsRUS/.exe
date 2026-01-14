@@ -87,30 +87,32 @@
   // 'clear' we handle in code, not here
 };
 
-  function handleCommand(event) {
-  if (event.key === "Enter") {
-    const cmd = cmdInput.value.trim().toLowerCase();
-    let output = "";
+        function handleCommand(event) {
+    if (event.key === "Enter") {
+      const cmd = cmdInput.value.trim().toLowerCase();
+      let output = "";
 
-    if (cmd === "clear") {
-      terminal.innerHTML = "";
-      output = "C:\\Users\\KINOS> ";
-    } else {
-      output += `\nC:\\Users\\KINOS> ${cmd}\n`;
-      output += responses[cmd] || "Unrecognized command. Type 'help' for options.";
+      if (cmd === "clear") {
+        terminal.innerHTML = "";
+        output = "C:\\Users\\KINOS> ";
+      } else {
+        output += `\nC:\\Users\\KINOS> ${cmd}\n`;
+        output += responses[cmd] || "Unrecognized command. Type 'help' for options.";
+      }
+
+      const newLine = document.createElement('div');
+      newLine.innerHTML =
+        output + "<br>C:\\Users\\KINOS&gt; <input type='text' autofocus />";
+      terminal.appendChild(newLine);
+
+      cmdInput.disabled = true;
+      cmdInput.removeEventListener("keydown", handleCommand);
+
+      cmdInput = newLine.querySelector('input');
+      cmdInput.addEventListener("keydown", handleCommand);
+
+      window.scrollTo(0, document.body.scrollHeight);
     }
-
-    const newLine = document.createElement('div');
-    newLine.innerHTML =
-      output + "<br>C:\\Users\\KINOS&gt; <input type='text' autofocus />";
-    terminal.appendChild(newLine);
-
-    cmdInput.disabled = true;
-    cmdInput.removeEventListener("keydown", handleCommand);
-
-    cmdInput = newLine.querySelector('input');
-    cmdInput.addEventListener("keydown", handleCommand);
-
-    window.scrollTo(0, document.body.scrollHeight);
   }
-}
+  cmdInput.addEventListener("keydown", handleCommand);
+</script>

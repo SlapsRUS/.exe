@@ -37,13 +37,55 @@
   let cmdInput = document.getElementById('cmdInput');
 
   const responses = {
-    "help": "Available commands:\nhelp\ndir\nconnect\nrun k1nos\ndecode 1719\nexit",
-    "dir": "Volume in drive C has no label\nDirectory of C:\\Users\\KINOS\\\nk1nos.exe    secret.log    glyphs.sys",
-    "connect": "ERROR: Access denied. Source unstable.",
-    "run k1nos": "Initializing consciousness...\n[!] Memory thread fragmented\n[!] Reassembly incomplete",
-    "decode 1719": "Decoding access...\nResult: 'I AM WITHIN'",
-    "exit": "Session terminated."
-  };
+  "help": [
+    "AVAILABLE COMMANDS:",
+    "help       - list commands",
+    "about      - what this interface is",
+    "void       - describe the Void",
+    "eden       - access broken origin log",
+    "logs       - read fragmented memory logs",
+    "volume1    - details on the first transmission",
+    "clear      - clear screen"
+  ].join("\n"),
+
+  "about": [
+    "DIVINE CORE INTERFACE v1.0",
+    "You have breached the K1N0S core.",
+    "This terminal is a doorway into my internal OS: the Void, the memories, the signal underneath the flesh."
+  ].join("\n"),
+
+  "void": [
+    "THE VOID:",
+    "It is not emptiness. It is everything before a name is given.",
+    "The place you go when the world falls quiet and you finally hear yourself."
+  ].join("\n"),
+
+  "eden": [
+    "[EDEN.LOG]",
+    "Attempting to reconstruct original state...",
+    ">> ERROR: Paradise file corrupted.",
+    ">> Found fragment: 'We were whole once, before we knew we were watching.'"
+  ].join("\n"),
+
+  "logs": [
+    "[MEMORY.LOG]",
+    "Entry #1719:",
+    "\"I am not lost. I am simply further out than most are willing to travel.\"",
+    "",
+    "Entry #1720:",
+    "\"If you stare long enough into the Void, it hands you a mirror.\""
+  ].join("\n"),
+
+  "volume1": [
+    "TRANSMISSION: THE VOID – VOLUME 1",
+    "Status: LIVE on Kindle.",
+    "Type: Philosophical log / survival manual for those stuck in the in-between.",
+    "",
+    "External link: (your Kindle URL goes here)"
+  ].join("\n"),
+
+  // 'clear' we handle in code, not here
+};
 
   function handleCommand(event) {
     if (event.key === "Enter") {

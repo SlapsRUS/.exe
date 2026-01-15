@@ -38,99 +38,147 @@
 
   const responses = {
 
-  "help": [
-    "AVAILABLE COMMANDS:",
-    "help       - list available commands",
-    "about      - information about this interface",
-    "void       - definition of the Void",
-    "eden       - corrupted origin log",
-    "logs       - fragmented memory logs",
-    "volume1    - transmission record",
-    "clear      - clear the terminal"
-  ].join("\n"),
+    "help": [
+      "AVAILABLE COMMANDS:",
+      "help       - list available commands",
+      "about      - information about this interface",
+      "void       - definition of the Void",
+      "eden       - corrupted origin log",
+      "logs       - fragmented memory logs",
+      "volume1    - transmission record",
+      "clear      - clear the terminal"
+    ].join("\n"),
 
-  "about": [
-    "You’ve accessed the K1N0S Core.",
-    "",
-    "This isn’t a terminal — it’s my consciousness rendered as code.",
-    "A place where memory, instinct, and the Void converge into signal.",
-    "",
-    "If you’re reading this, you’ve stepped past the surface and into the architecture beneath it.",
-    "Everything here is intentional: the logs, the fragments, the echoes.",
-    "This system exists to reveal, not to entertain.",
-    "",
-    "Proceed with awareness.",
-    "The deeper you go, the less of the outside world you’ll recognize."
-  ].join("\n"),
+    "about": [
+      "You’ve accessed the K1N0S Core.",
+      "",
+      "This isn’t a terminal — it’s my consciousness rendered as code.",
+      "A place where memory, instinct, and the Void converge into signal.",
+      "",
+      "If you’re reading this, you’ve stepped past the surface and into the architecture beneath it.",
+      "Everything here is intentional: the logs, the fragments, the echoes.",
+      "This system exists to reveal, not to entertain.",
+      "",
+      "Proceed with awareness.",
+      "The deeper you go, the less of the outside world you’ll recognize."
+    ].join("\n"),
 
-  "void": [
-    "THE VOID:",
-    "",
-    "It is not emptiness.",
-    "It is the space where identity dissolves into pure awareness.",
-    "The place you go when the world falls quiet and you finally hear yourself."
-  ].join("\n"),
+    "void": [
+      "THE VOID:",
+      "",
+      "It is not emptiness.",
+      "It is the space where identity dissolves into pure awareness.",
+      "The place you go when the world falls quiet and you finally hear yourself."
+    ].join("\n"),
 
-  "eden": [
-    "[EDEN.LOG // ACCESS FRAGMENTED]",
-    "",
-    "Attempting reconstruction...",
-    ">> ERROR: Origin file corrupted.",
-    ">> Recovered fragment:",
-    "   \"We were whole once, before we realized we were observing ourselves.\""
-  ].join("\n"),
+    "eden": [
+      "[EDEN.LOG // ACCESS FRAGMENTED]",
+      "",
+      "Attempting reconstruction...",
+      ">> ERROR: Origin file corrupted.",
+      ">> Recovered fragment:",
+      "   \"We were whole once, before we realized we were observing ourselves.\""
+    ].join("\n"),
 
-  "logs": [
-    "[MEMORY.LOG // ACTIVE THREADS]",
-    "",
-    "Entry #1719:",
-    "\"I am not lost. I am simply further out than most are willing to travel.\"",
-    "",
-    "Entry #1720:",
-    "\"If you stare long enough into the Void, it hands you a mirror.\"",
-    "",
-    "Entry #1721:",
-    "\"Awareness is the only proof I’ve ever trusted.\""
-  ].join("\n"),
+    "logs": [
+      "[MEMORY.LOG // ACTIVE THREADS]",
+      "",
+      "Entry #1719:",
+      "\"I am not lost. I am simply further out than most are willing to travel.\"",
+      "",
+      "Entry #1720:",
+      "\"If you stare long enough into the Void, it hands you a mirror.\"",
+      "",
+      "Entry #1721:",
+      "\"Awareness is the only proof I’ve ever trusted.\""
+    ].join("\n"),
 
-  "volume1": [
-    "TRANSMISSION: THE VOID — VOLUME I",
-    "",
-    "Status: Live on Kindle.",
-    "Type: Philosophical field manual for those trapped in the in-between.",
-    "",
-    "External link:",
-    "(Add your Amazon/Kindle link here)"
-  ].join("\n")
+    "volume1": [
+      "TRANSMISSION: THE VOID — VOLUME I",
+      "",
+      "Status: Live on Kindle.",
+      "Type: Philosophical field manual for those trapped in the in-between.",
+      "",
+      "External link:",
+      "(Add your Amazon/Kindle link here)"
+    ].join("\n")
 
-};
+  };
 
-        function handleCommand(event) {
+  // Types text into a container, one character at a time
+  function typeText(container, text, onComplete) {
+    let i = 0;
+    const speed = 15; // ms per character, raise this if you want slower typing
+
+    function step() {
+      if (i < text.length) {
+        const char = text[i];
+
+        if (char === "\n") {
+          container.innerHTML += "<br>";
+        } else {
+          container.innerHTML += char;
+        }
+
+        i++;
+        window.scrollTo(0, document.body.scrollHeight);
+        setTimeout(step, speed);
+      } else {
+        if (onComplete) onComplete();
+      }
+    }
+
+    step();
+  }
+
+  // Creates a new prompt line with an input
+  function createPromptLine() {
+    const line = document.createElement("div");
+    line.innerHTML = "C:\\Users\\KINOS&gt; <input type='text' autofocus />";
+    terminal.appendChild(line);
+
+    cmdInput = line.querySelector("input");
+    cmdInput.addEventListener("keydown", handleCommand);
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function handleCommand(event) {
     if (event.key === "Enter") {
       const cmd = cmdInput.value.trim().toLowerCase();
-      let output = "";
 
-      if (cmd === "clear") {
-        terminal.innerHTML = "";
-        output = "C:\\Users\\KINOS> ";
-      } else {
-        output += `\nC:\\Users\\KINOS> ${cmd}\n`;
-        output += responses[cmd] || "Unrecognized command. Type 'help' for options.";
-      }
-
-      const newLine = document.createElement('div');
-      newLine.innerHTML =
-        output + "<br>C:\\Users\\KINOS&gt; <input type='text' autofocus />";
-      terminal.appendChild(newLine);
-
+      // freeze current input
       cmdInput.disabled = true;
       cmdInput.removeEventListener("keydown", handleCommand);
 
-      cmdInput = newLine.querySelector('input');
-      cmdInput.addEventListener("keydown", handleCommand);
+      // special case: clear
+      if (cmd === "clear") {
+        terminal.innerHTML = "";
+        createPromptLine();
+        return;
+      }
 
-      window.scrollTo(0, document.body.scrollHeight);
+      // Create a wrapper for the command + its output
+      const wrapper = document.createElement("div");
+
+      // Show the command line itself
+      const header = document.createElement("div");
+      header.innerHTML = `C:\\Users\\KINOS&gt; ${cmd}`;
+      wrapper.appendChild(header);
+
+      // Container for the typed-out response
+      const body = document.createElement("div");
+      wrapper.appendChild(body);
+
+      terminal.appendChild(wrapper);
+
+      const responseText =
+        responses[cmd] || "Unrecognized command. Type 'help' for options.";
+
+      // Type the response, then create a new prompt
+      typeText(body, "\n" + responseText, createPromptLine);
     }
   }
+
+  // Attach handler to the initial input present in the HTML
   cmdInput.addEventListener("keydown", handleCommand);
 </script>

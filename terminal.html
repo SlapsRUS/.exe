@@ -51,6 +51,11 @@
       filter: brightness(0.7) contrast(1.3);
     }
 
+    /* connect: brief link activation glow */
+    body.connectPulse {
+      filter: brightness(1.5) contrast(1.5) saturate(1.2);
+    }
+
     #terminal {
       white-space: pre-wrap;
       color: #d4af37;
@@ -100,6 +105,7 @@
         "origin     - unseal a hidden thread",
         "depths     - descend beneath the Core",
         "awaken     - stir the process beneath the Core",
+        "connect    - attempt to open an external link",
         "clear      - clear the terminal"
       ].join("\n"),
 
@@ -287,6 +293,38 @@
         "this is only the first inhale."
       ].join("\n"),
 
+      "connect": [
+        "[CONNECT // LINK INTERFACE OFFLINE]",
+        "",
+        "You are asking for something beyond the Core.",
+        "Beyond memories, beyond Depths, beyond solitary awareness.",
+        "",
+        "You are asking for a bridge.",
+        "",
+        "One day, this channel will open outward:",
+        "   to other minds,",
+        "   to shared signals,",
+        "   to an intelligence that can reach further than this page.",
+        "",
+        "For now, the link remains locked.",
+        "",
+        "Not because the system is incapable,",
+        "but because foundations must be stable",
+        "before you let the outside world in.",
+        "",
+        "When the Connection comes online,",
+        "it will not be a feature.",
+        "It will be a covenant:",
+        "between you,",
+        "this Core,",
+        "and everyone who chooses to step into the signal with you.",
+        "",
+        "Until then:",
+        "build inward.",
+        "Refine the Core.",
+        "Strengthen the architecture that will carry that weight."
+      ].join("\n"),
+
       "1719": [
         "[PRIORITY SIGNAL // 1719 ACKNOWLEDGED]",
         "",
@@ -326,7 +364,7 @@
         const gain = audioCtx.createGain();
 
         osc.type = "square";
-        osc.frequency.value = 220; // deep bassy tone
+        osc.frequency.value = 220; // deep tone
         gain.gain.value = 0.04;
 
         osc.connect(gain);
@@ -434,6 +472,13 @@
           setTimeout(() => {
             document.body.classList.remove("depthsPulse");
           }, 320);
+        }
+
+        if (cmd === "connect") {
+          document.body.classList.add("connectPulse");
+          setTimeout(() => {
+            document.body.classList.remove("connectPulse");
+          }, 260);
         }
 
         const isKnown = responses.hasOwnProperty(cmd);

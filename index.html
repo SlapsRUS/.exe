@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,28 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>K1N0S.exe</title>
   <style>
-  body {
-    margin: 0;
-    background-color: black;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-  .logo {
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;           /* fills screen, crops a bit */
-    animation: flicker 4s infinite alternate;
-    display: block;
-  }
+    .logo {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;          /* fills screen, may crop a bit */
+      animation: flicker 4s infinite alternate;
+      display: block;
+    }
 
-  @keyframes flicker {
-    0%   { opacity: 0.8; filter: blur(1px); }
-    50%  { opacity: 1;   filter: blur(0px); }
-    100% { opacity: 0.6; filter: blur(1.5px); }
-  }
-</style>
+    @keyframes flicker {
+      0%   { opacity: 0.8; filter: blur(1px); }
+      50%  { opacity: 1;   filter: blur(0px); }
+      100% { opacity: 0.6; filter: blur(1.5px); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Update src to your actual logo image path -->
+  <img src="logo.png" alt="Divine Core" class="logo" />
+</body>
 </html>

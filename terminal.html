@@ -5,56 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K1N0S Terminal</title>
   <style>
-  body {
-    background-color: black;
-    color: #d4af37; /* gold */
-    font-family: 'Courier New', Courier, monospace;
-    margin: 0;
-    padding: 10px;
-    position: relative;
-    overflow-x: hidden;
-  }
+    body {
+      background-color: black;
+      color: #d4af37; /* gold */
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 10px;
+      position: relative;
+      overflow-x: hidden;
+    }
 
-  /* Stronger CRT / scanline overlay for mobile + desktop */
-  body::before {
-    content: "";
-    pointer-events: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgba(212, 175, 55, 0.22) 0px,
-      rgba(212, 175, 55, 0.22) 2px,
-      transparent 2px,
-      transparent 5px
-    );
-    opacity: 0.6;           /* stronger so it’s visible on phones */
-    z-index: 999;
-  }
+    /* Strong CRT / scanline overlay */
+    body::before {
+      content: "";
+      pointer-events: none;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(212, 175, 55, 0.22) 0px,
+        rgba(212, 175, 55, 0.22) 2px,
+        transparent 2px,
+        transparent 5px
+      );
+      opacity: 0.6;
+      z-index: 999;
+    }
 
-  #terminal {
-    white-space: pre-wrap;
-    color: #d4af37;
-    text-shadow:
-      0 0 4px rgba(212, 175, 55, 0.9),
-      0 0 10px rgba(212, 175, 55, 0.7); /* stronger glow */
-    position: relative;
-    z-index: 1;             /* keep terminal above background, below overlay */
-  }
+    #terminal {
+      white-space: pre-wrap;
+      color: #d4af37;
+      text-shadow:
+        0 0 4px rgba(212, 175, 55, 0.9),
+        0 0 10px rgba(212, 175, 55, 0.7);
+      position: relative;
+      z-index: 1;
+    }
 
-  input {
-    background: black;
-    color: #d4af37;
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
-    width: 80%;
-    outline: none;
-  }
-</style>
+    input {
+      background: black;
+      color: #d4af37;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+      width: 80%;
+      outline: none;
+    }
+  </style>
 </head>
 <body>
   <div id="terminal">
@@ -183,6 +183,35 @@
 
     };
 
+    // --- ENTER BEEP SETUP ---
+    let audioCtx = null;
+
+    function playBeep() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const duration = 0.06; // seconds
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = "square";
+        oscillator.frequency.value = 800;      // Hz
+        gainNode.gain.value = 0.05;           // volume (keep low)
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+      } catch (e) {
+        // fail silently if audio isn't allowed
+      }
+    }
+    // -------------------------
+
     // Types text into a container, one character at a time
     function typeText(container, text, onComplete) {
       let i = 0;
@@ -222,6 +251,8 @@
 
     function handleCommand(event) {
       if (event.key === "Enter") {
+        playBeep(); // 🔊 play sound on submit
+
         const cmd = cmdInput.value.trim().toLowerCase();
 
         // freeze current input

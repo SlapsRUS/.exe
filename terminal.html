@@ -283,17 +283,18 @@
       }
     }
 
+    // Softer, lower-pitched enter beep
     async function playBeep() {
       try {
         await ensureAudioContext();
 
-        const duration = 0.06; // seconds
+        const duration = 0.05; // seconds
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
         oscillator.type = "square";
-        oscillator.frequency.value = 900;      // Hz
-        gainNode.gain.value = 0.08;           // a bit louder
+        oscillator.frequency.value = 600;      // lower tone
+        gainNode.gain.value = 0.045;          // softer
 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
@@ -306,6 +307,7 @@
       }
     }
 
+    // Deeper, softer typing click
     async function playKeyClick() {
       try {
         await ensureAudioContext();
@@ -314,14 +316,14 @@
         const gain = audioCtx.createGain();
 
         // Lower, thocky click with slight randomness
-        osc.frequency.value = 450 + Math.random() * 120;
+        osc.frequency.value = 320 + Math.random() * 70;
         osc.type = "square";
 
-        gain.gain.value = 0.06;
+        gain.gain.value = 0.035;
 
         const now = audioCtx.currentTime;
         // Fast decay so it feels like a mechanical tick
-        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.setValueAtTime(0.035, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
 
         osc.connect(gain);
@@ -353,7 +355,7 @@
             // play a small click every few non-space characters
             if (char !== " " && char !== "\t") {
               typedCount++;
-              if (typedCount % 2 === 0) {
+              if (typedCount % 3 === 0) { // less frequent clicks
                 playKeyClick();
               }
             }
@@ -461,7 +463,7 @@
         "Type 'help' to begin."
       ].join("\n");
 
-      typeText(bootBlock, bootText, () => {
+      typeText(bootBlock, () => {}, () => {
         if (cmdInput) {
           cmdInput.disabled = false;
           cmdInput.focus();
@@ -469,7 +471,7 @@
         } else {
           createPromptLine();
         }
-      });
+      }).innerHTML = bootText;
     });
   </script>
 </body>

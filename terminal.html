@@ -268,20 +268,25 @@
       try {
         ensureAudioContext();
 
-        const duration = 0.015; // seconds
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
-        oscillator.type = "square";
-        oscillator.frequency.value = 2000;     // Hz, higher clicky tone
-        gainNode.gain.value = 0.02;           // quieter than enter beep
+        // Lower, thocky click with slight randomness
+        osc.frequency.value = 400 + Math.random() * 80;
+        osc.type = "square";
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+        gain.gain.value = 0.04;
 
         const now = audioCtx.currentTime;
-        oscillator.start(now);
-        oscillator.stop(now + duration);
+        // Fast decay so it feels like a mechanical tick
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.03);
       } catch (e) {
         // ignore if blocked
       }

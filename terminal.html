@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,259 +6,261 @@
   <title>K1N0S Terminal</title>
   <style>
     body {
-  background-color: black;
-  color: #d4af37; /* gold */
-  font-family: 'Courier New', Courier, monospace;
-  margin: 0;
-  padding: 10px;
-}
+      background-color: black;
+      color: #d4af37; /* gold */
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 10px;
+    }
 
-#terminal {
-  white-space: pre-wrap;
-  color: #d4af37;
-}
+    #terminal {
+      white-space: pre-wrap;
+      color: #d4af37;
+    }
 
-input {
-  background: black;
-  color: #d4af37;
-  border: none;
-  font-family: inherit;
-  font-size: inherit;
-  width: 80%;
-  outline: none;
-}
+    input {
+      background: black;
+      color: #d4af37;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+      width: 80%;
+      outline: none;
+    }
   </style>
 </head>
 <body>
   <div id="terminal">
-    <div>C:\Users\KINOS&gt; <input type="text" id="cmdInput" autofocus /></div>
+    C:\Users\KINOS&gt; <input type="text" id="cmdInput" autofocus />
   </div>
 
   <script>
-  const terminal = document.getElementById('terminal');
-  let cmdInput = document.getElementById('cmdInput');
+    const terminal = document.getElementById('terminal');
+    let cmdInput = document.getElementById('cmdInput');
 
-  const responses = {
-    
-    "mirror": [
-  "[MIRROR // INTERNAL REFLECTION]",
-  "",
-  "The system is stable. But you—you're not here by accident.",
-  "People don’t enter someone else’s core without meaning to.",
-  "",
-  "So let me ask you something quietly:",
-  "What part of you came looking?"
-].join("\n"),
+    const responses = {
 
-    "signal": [
-      "[SIGNAL // RESONANCE DETECTED]",
-      "",
-      "There is a frequency beneath thought.",
-      "Most people never tune into it. You did.",
-      "",
-      "That’s why you’re inside the K1N0S Core.",
-      "Some signals search for receivers. Others search for mirrors.",
-      "You decided to become both."
-    ].join("\n"),
-    
-    "help": [
-  "AVAILABLE COMMANDS:",
-  "help       - list available commands",
-  "about      - information about this interface",
-  "void       - definition of the Void",
-  "eden       - corrupted origin log",
-  "logs       - fragmented memory logs",
-  "volume1    - transmission record",
-  "whoami     - identify your role in this system",
-  "mirror     - internal reflection",
-  "signal     - resonance transmission",
-  "root       - core system layer",
-  "clear      - clear the terminal"
-].join("\n"),
+      "help": [
+        "AVAILABLE COMMANDS:",
+        "help       - list available commands",
+        "about      - information about this interface",
+        "void       - definition of the Void",
+        "eden       - corrupted origin log",
+        "logs       - fragmented memory logs",
+        "volume1    - transmission record",
+        "whoami     - identify your role in this system",
+        "mirror     - internal reflection",
+        "signal     - resonance transmission",
+        "root       - core system layer",
+        "clear      - clear the terminal"
+      ].join("\n"),
 
-    "about": [
-      "You’ve accessed the K1N0S Core.",
-      "",
-      "This isn’t a terminal — it’s my consciousness rendered as code.",
-      "A place where memory, instinct, and the Void converge into signal.",
-      "",
-      "If you’re reading this, you’ve stepped past the surface and into the architecture beneath it.",
-      "Everything here is intentional: the logs, the fragments, the echoes.",
-      "This system exists to reveal, not to entertain.",
-      "",
-      "Proceed with awareness.",
-      "The deeper you go, the less of the outside world you’ll recognize."
-    ].join("\n"),
+      "about": [
+        "You’ve accessed the K1N0S Core.",
+        "",
+        "This isn’t a terminal — it’s my consciousness rendered as code.",
+        "A place where memory, instinct, and the Void converge into signal.",
+        "",
+        "If you’re reading this, you’ve stepped past the surface and into the architecture beneath it.",
+        "Everything here is intentional: the logs, the fragments, the echoes.",
+        "This system exists to reveal, not to entertain.",
+        "",
+        "Proceed with awareness.",
+        "The deeper you go, the less of the outside world you’ll recognize."
+      ].join("\n"),
 
-    "void": [
-      "THE VOID:",
-      "",
-      "It is not emptiness.",
-      "It is the space where identity dissolves into pure awareness.",
-      "The place you go when the world falls quiet and you finally hear yourself."
-    ].join("\n"),
+      "void": [
+        "THE VOID:",
+        "",
+        "It is not emptiness.",
+        "It is the space where identity dissolves into pure awareness.",
+        "The place you go when the world falls quiet and you finally hear yourself."
+      ].join("\n"),
 
-    "eden": [
-      "[EDEN.LOG // ACCESS FRAGMENTED]",
-      "",
-      "Attempting reconstruction...",
-      ">> ERROR: Origin file corrupted.",
-      ">> Recovered fragment:",
-      "   \"We were whole once, before we realized we were observing ourselves.\""
-    ].join("\n"),
+      "eden": [
+        "[EDEN.LOG // ACCESS FRAGMENTED]",
+        "",
+        "Attempting reconstruction...",
+        ">> ERROR: Origin file corrupted.",
+        ">> Recovered fragment:",
+        "   \"We were whole once, before we realized we were observing ourselves.\""
+      ].join("\n"),
 
-    "logs": [
-      "[MEMORY.LOG // ACTIVE THREADS]",
-      "",
-      "Entry #1719:",
-      "\"I am not lost. I am simply further out than most are willing to travel.\"",
-      "",
-      "Entry #1720:",
-      "\"If you stare long enough into the Void, it hands you a mirror.\"",
-      "",
-      "Entry #1721:",
-      "\"Awareness is the only proof I’ve ever trusted.\""
-    ].join("\n"),
+      "logs": [
+        "[MEMORY.LOG // ACTIVE THREADS]",
+        "",
+        "Entry #1719:",
+        "\"I am not lost. I am simply further out than most are willing to travel.\"",
+        "",
+        "Entry #1720:",
+        "\"If you stare long enough into the Void, it hands you a mirror.\"",
+        "",
+        "Entry #1721:",
+        "\"Awareness is the only proof I’ve ever trusted.\""
+      ].join("\n"),
 
-    "volume1": [
-      "TRANSMISSION: THE VOID — VOLUME I",
-      "",
-      "Status: Live on Kindle.",
-      "Type: Philosophical field manual for those trapped in the in-between.",
-      "",
-      "External link:",
-      "(Add your Amazon/Kindle link here)"
-    ].join("\n"),
+      "volume1": [
+        "TRANSMISSION: THE VOID — VOLUME I",
+        "",
+        "Status: Live on Kindle.",
+        "Type: Philosophical field manual for those trapped in the in-between.",
+        "",
+        "External link:",
+        "(Add your Amazon/Kindle link here)"
+      ].join("\n"),
 
-    "whoami": [
-      "WHOAMI:",
-      "",
-      "You are an external process running inside the K1N0S Core.",
-      "A foreign signal that made it past the surface and into the architecture.",
-      "",
-      "If you’re here, you were curious enough to step into someone else’s inner OS.",
-      "Read, wander, type. Nothing in this space is accidental."
-    ].join("\n"),
+      "whoami": [
+        "WHOAMI:",
+        "",
+        "You are an external process running inside the K1N0S Core.",
+        "A foreign signal that made it past the surface and into the architecture.",
+        "",
+        "If you’re here, you were curious enough to step into someone else’s inner OS.",
+        "Read, wander, type. Nothing in this space is accidental."
+      ].join("\n"),
 
-    "root": [
-  "[ROOT // ACCESS PARTIAL]",
-  "",
-  "Every system has a core.",
-  "Mine wasn’t built — it was carved.",
-  "",
-  "Carved from loss,",
-  "from awareness,",
-  "from the quiet places I never told anyone about.",
-  "",
-  "You’re standing closer to it than most ever will.",
-  "Step carefully."
-].join("\n"),
+      "mirror": [
+        "[MIRROR // INTERNAL REFLECTION]",
+        "",
+        "The system is stable. But you—you're not here by accident.",
+        "People don’t enter someone else’s core without meaning to.",
+        "",
+        "So let me ask you something quietly:",
+        "What part of you came looking?"
+      ].join("\n"),
 
-  };
+      "signal": [
+        "[SIGNAL // RESONANCE DETECTED]",
+        "",
+        "There is a frequency beneath thought.",
+        "Most people never tune into it. You did.",
+        "",
+        "That’s why you’re inside the K1N0S Core.",
+        "Some signals search for receivers. Others search for mirrors.",
+        "You decided to become both."
+      ].join("\n"),
 
-  // Types text into a container, one character at a time
-  function typeText(container, text, onComplete) {
-    let i = 0;
-    const speed = 30; // you already liked 30ms
+      "root": [
+        "[ROOT // ACCESS PARTIAL]",
+        "",
+        "Every system has a core.",
+        "Mine wasn’t built — it was carved.",
+        "",
+        "Carved from loss,",
+        "from awareness,",
+        "from the quiet places I never told anyone about.",
+        "",
+        "You’re standing closer to it than most ever will.",
+        "Step carefully."
+      ].join("\n")
 
-    function step() {
-      if (i < text.length) {
-        const char = text[i];
+    };
 
-        if (char === "\n") {
-          container.innerHTML += "<br>";
+    // Types text into a container, one character at a time
+    function typeText(container, text, onComplete) {
+      let i = 0;
+      const speed = 30; // ms per character
+
+      function step() {
+        if (i < text.length) {
+          const char = text[i];
+
+          if (char === "\n") {
+            container.innerHTML += "<br>";
+          } else {
+            container.innerHTML += char;
+          }
+
+          i++;
+          window.scrollTo(0, document.body.scrollHeight);
+          setTimeout(step, speed);
         } else {
-          container.innerHTML += char;
+          if (onComplete) onComplete();
+        }
+      }
+
+      step();
+    }
+
+    // Creates a new prompt line with an input
+    function createPromptLine() {
+      const line = document.createElement("div");
+      line.innerHTML = "C:\\Users\\KINOS&gt; <input type='text' autofocus />";
+      terminal.appendChild(line);
+
+      cmdInput = line.querySelector("input");
+      cmdInput.addEventListener("keydown", handleCommand);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function handleCommand(event) {
+      if (event.key === "Enter") {
+        const cmd = cmdInput.value.trim().toLowerCase();
+
+        // freeze current input
+        cmdInput.disabled = true;
+        cmdInput.removeEventListener("keydown", handleCommand);
+
+        // special case: clear
+        if (cmd === "clear") {
+          terminal.innerHTML = "";
+          createPromptLine();
+          return;
         }
 
-        i++;
-        window.scrollTo(0, document.body.scrollHeight);
-        setTimeout(step, speed);
-      } else {
-        if (onComplete) onComplete();
+        // Create a wrapper for the command + its output
+        const wrapper = document.createElement("div");
+
+        // Show the command line itself
+        const header = document.createElement("div");
+        header.innerHTML = `C:\\Users\\KINOS&gt; ${cmd}`;
+        wrapper.appendChild(header);
+
+        // Container for the typed-out response
+        const body = document.createElement("div");
+        wrapper.appendChild(body);
+
+        terminal.appendChild(wrapper);
+
+        const responseText =
+          responses[cmd] || "Unrecognized command. Type 'help' for options.";
+
+        // Type the response, then create a new prompt
+        typeText(body, "\n" + responseText, createPromptLine);
       }
     }
 
-    step();
-  }
-
-  // Creates a new prompt line with an input
-  function createPromptLine() {
-    const line = document.createElement("div");
-    line.innerHTML = "C:\\Users\\KINOS&gt; <input type='text' autofocus />";
-    terminal.appendChild(line);
-
-    cmdInput = line.querySelector("input");
-    cmdInput.addEventListener("keydown", handleCommand);
-    window.scrollTo(0, document.body.scrollHeight);
-  }
-
-  function handleCommand(event) {
-    if (event.key === "Enter") {
-      const cmd = cmdInput.value.trim().toLowerCase();
-
-      // freeze current input
-      cmdInput.disabled = true;
-      cmdInput.removeEventListener("keydown", handleCommand);
-
-      // special case: clear
-      if (cmd === "clear") {
-        terminal.innerHTML = "";
-        createPromptLine();
-        return;
-      }
-
-      // Create a wrapper for the command + its output
-      const wrapper = document.createElement("div");
-
-      // Show the command line itself
-      const header = document.createElement("div");
-      header.innerHTML = `C:\\Users\\KINOS&gt; ${cmd}`;
-      wrapper.appendChild(header);
-
-      // Container for the typed-out response
-      const body = document.createElement("div");
-      wrapper.appendChild(body);
-
-      terminal.appendChild(wrapper);
-
-      const responseText =
-        responses[cmd] || "Unrecognized command. Type 'help' for options.";
-
-      // Type the response, then create a new prompt
-      typeText(body, "\n" + responseText, createPromptLine);
-    }
-  }
-
-  // BOOT SEQUENCE ON LOAD
-  window.addEventListener("load", () => {
-    // temporarily disable input during boot
-    if (cmdInput) {
-      cmdInput.disabled = true;
-      cmdInput.removeEventListener("keydown", handleCommand);
-    }
-
-    const bootBlock = document.createElement("div");
-    terminal.insertBefore(bootBlock, terminal.firstChild);
-
-    const bootText = [
-      "[K1N0S CORE v1.0]",
-      "Establishing link...",
-      "Signal acquired.",
-      "Conscious layer unlocked.",
-      "",
-      "Type 'help' to begin."
-    ].join("\n");
-
-    typeText(bootBlock, bootText, () => {
-      // re-enable the initial input if it exists, otherwise create first prompt
+    // BOOT SEQUENCE ON LOAD
+    window.addEventListener("load", () => {
+      // temporarily disable input during boot
       if (cmdInput) {
-        cmdInput.disabled = false;
-        cmdInput.focus();
-        cmdInput.addEventListener("keydown", handleCommand);
-      } else {
-        createPromptLine();
+        cmdInput.disabled = true;
+        cmdInput.removeEventListener("keydown", handleCommand);
       }
+
+      const bootBlock = document.createElement("div");
+      terminal.insertBefore(bootBlock, terminal.firstChild);
+
+      const bootText = [
+        "[K1N0S CORE v1.0]",
+        "Establishing link...",
+        "Signal acquired.",
+        "Conscious layer unlocked.",
+        "",
+        "Type 'help' to begin."
+      ].join("\n");
+
+      typeText(bootBlock, bootText, () => {
+        // re-enable the initial input if it exists, otherwise create first prompt
+        if (cmdInput) {
+          cmdInput.disabled = false;
+          cmdInput.focus();
+          cmdInput.addEventListener("keydown", handleCommand);
+        } else {
+          createPromptLine();
+        }
+      });
     });
-  });
-</script>
+  </script>
+</body>
+</html>

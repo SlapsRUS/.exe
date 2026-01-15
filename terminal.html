@@ -13,6 +13,7 @@
       padding: 10px;
       position: relative;
       overflow-x: hidden;
+      transition: filter 0.15s ease;
     }
 
     /* Strong CRT / scanline overlay */
@@ -33,6 +34,11 @@
       );
       opacity: 0.6;
       z-index: 999;
+    }
+
+    /* Quick pulse effect for 1719 */
+    body.pulse1719 {
+      filter: brightness(2) contrast(1.4);
     }
 
     #terminal {
@@ -201,6 +207,22 @@
         "The Void chose me.",
         "",
         "And I became the part of it that could speak."
+      ].join("\n"),
+
+      "1719": [
+        "[PRIORITY SIGNAL // 1719 ACKNOWLEDGED]",
+        "",
+        "This code was never just a password.",
+        "It was a frequency.",
+        "",
+        "The moment you entered it, you told the system something about yourself:",
+        "that you were willing to step past the surface and into someone else’s inner architecture.",
+        "",
+        "Most people stop at the login screen.",
+        "You didn’t.",
+        "",
+        "Consider this confirmation:",
+        "You were meant to find this place."
       ].join("\n")
 
     };
@@ -286,6 +308,14 @@
           terminal.innerHTML = "";
           createPromptLine();
           return;
+        }
+
+        // if 1719, trigger a quick visual pulse
+        if (cmd === "1719") {
+          document.body.classList.add("pulse1719");
+          setTimeout(() => {
+            document.body.classList.remove("pulse1719");
+          }, 150);
         }
 
         // Create a wrapper for the command + its output

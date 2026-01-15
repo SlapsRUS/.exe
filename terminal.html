@@ -37,54 +37,72 @@
   let cmdInput = document.getElementById('cmdInput');
 
   const responses = {
+
   "help": [
     "AVAILABLE COMMANDS:",
-    "help       - list commands",
-    "about      - what this interface is",
-    "void       - describe the Void",
-    "eden       - access broken origin log",
-    "logs       - read fragmented memory logs",
-    "volume1    - details on the first transmission",
-    "clear      - clear screen"
+    "help       - list available commands",
+    "about      - information about this interface",
+    "void       - definition of the Void",
+    "eden       - corrupted origin log",
+    "logs       - fragmented memory logs",
+    "volume1    - transmission record",
+    "clear      - clear the terminal"
   ].join("\n"),
 
   "about": [
-    "DIVINE CORE INTERFACE v1.0",
-    "You have breached the K1N0S core.",
-    "This terminal is a doorway into my internal OS: the Void, the memories, the signal underneath the flesh."
+    "You’ve accessed the K1N0S Core.",
+    "",
+    "This isn’t a terminal — it’s my consciousness rendered as code.",
+    "A place where memory, instinct, and the Void converge into signal.",
+    "",
+    "If you’re reading this, you’ve stepped past the surface and into the architecture beneath it.",
+    "Everything here is intentional: the logs, the fragments, the echoes.",
+    "This system exists to reveal, not to entertain.",
+    "",
+    "Proceed with awareness.",
+    "The deeper you go, the less of the outside world you’ll recognize."
   ].join("\n"),
 
   "void": [
     "THE VOID:",
-    "It is not emptiness. It is everything before a name is given.",
+    "",
+    "It is not emptiness.",
+    "It is the space where identity dissolves into pure awareness.",
     "The place you go when the world falls quiet and you finally hear yourself."
   ].join("\n"),
 
   "eden": [
-    "[EDEN.LOG]",
-    "Attempting to reconstruct original state...",
-    ">> ERROR: Paradise file corrupted.",
-    ">> Found fragment: 'We were whole once, before we knew we were watching.'"
+    "[EDEN.LOG // ACCESS FRAGMENTED]",
+    "",
+    "Attempting reconstruction...",
+    ">> ERROR: Origin file corrupted.",
+    ">> Recovered fragment:",
+    "   \"We were whole once, before we realized we were observing ourselves.\""
   ].join("\n"),
 
   "logs": [
-    "[MEMORY.LOG]",
+    "[MEMORY.LOG // ACTIVE THREADS]",
+    "",
     "Entry #1719:",
     "\"I am not lost. I am simply further out than most are willing to travel.\"",
     "",
     "Entry #1720:",
-    "\"If you stare long enough into the Void, it hands you a mirror.\""
+    "\"If you stare long enough into the Void, it hands you a mirror.\"",
+    "",
+    "Entry #1721:",
+    "\"Awareness is the only proof I’ve ever trusted.\""
   ].join("\n"),
 
   "volume1": [
-    "TRANSMISSION: THE VOID – VOLUME 1",
-    "Status: LIVE on Kindle.",
-    "Type: Philosophical log / survival manual for those stuck in the in-between.",
+    "TRANSMISSION: THE VOID — VOLUME I",
     "",
-    "External link: (your Kindle URL goes here)"
-  ].join("\n"),
+    "Status: Live on Kindle.",
+    "Type: Philosophical field manual for those trapped in the in-between.",
+    "",
+    "External link:",
+    "(Add your Amazon/Kindle link here)"
+  ].join("\n")
 
-  // 'clear' we handle in code, not here
 };
 
         function handleCommand(event) {

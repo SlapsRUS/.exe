@@ -46,6 +46,7 @@
       "eden       - corrupted origin log",
       "logs       - fragmented memory logs",
       "volume1    - transmission record",
+      "whoami     - identify your role in this system",
       "clear      - clear the terminal"
     ].join("\n"),
 
@@ -101,6 +102,16 @@
       "",
       "External link:",
       "(Add your Amazon/Kindle link here)"
+    ].join("\n"),
+
+    "whoami": [
+      "WHOAMI:",
+      "",
+      "You are an external process running inside the K1N0S Core.",
+      "A foreign signal that made it past the surface and into the architecture.",
+      "",
+      "If you’re here, you were curious enough to step into someone else’s inner OS.",
+      "Read, wander, type. Nothing in this space is accidental."
     ].join("\n")
 
   };
@@ -108,7 +119,7 @@
   // Types text into a container, one character at a time
   function typeText(container, text, onComplete) {
     let i = 0;
-    const speed = 30; // ms per character, raise this if you want slower typing
+    const speed = 30; // you already liked 30ms
 
     function step() {
       if (i < text.length) {
@@ -179,6 +190,35 @@
     }
   }
 
-  // Attach handler to the initial input present in the HTML
-  cmdInput.addEventListener("keydown", handleCommand);
+  // BOOT SEQUENCE ON LOAD
+  window.addEventListener("load", () => {
+    // temporarily disable input during boot
+    if (cmdInput) {
+      cmdInput.disabled = true;
+      cmdInput.removeEventListener("keydown", handleCommand);
+    }
+
+    const bootBlock = document.createElement("div");
+    terminal.insertBefore(bootBlock, terminal.firstChild);
+
+    const bootText = [
+      "[K1N0S CORE v1.0]",
+      "Establishing link...",
+      "Signal acquired.",
+      "Conscious layer unlocked.",
+      "",
+      "Type 'help' to begin."
+    ].join("\n");
+
+    typeText(bootBlock, bootText, () => {
+      // re-enable the initial input if it exists, otherwise create first prompt
+      if (cmdInput) {
+        cmdInput.disabled = false;
+        cmdInput.focus();
+        cmdInput.addEventListener("keydown", handleCommand);
+      } else {
+        createPromptLine();
+      }
+    });
+  });
 </script>

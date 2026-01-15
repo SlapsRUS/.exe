@@ -232,14 +232,18 @@
 
     };
 
-    // --- ENTER BEEP SETUP ---
+    // --- AUDIO SETUP (ENTER BEEP + TYPING CLICKS) ---
     let audioCtx = null;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
 
     function playBeep() {
       try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        ensureAudioContext();
 
         const duration = 0.06; // seconds
         const oscillator = audioCtx.createOscillator();
@@ -259,11 +263,35 @@
         // fail silently if audio isn't allowed
       }
     }
-    // -------------------------
+
+    function playKeyClick() {
+      try {
+        ensureAudioContext();
+
+        const duration = 0.015; // seconds
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = "square";
+        oscillator.frequency.value = 2000;     // Hz, higher clicky tone
+        gainNode.gain.value = 0.02;           // quieter than enter beep
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+      } catch (e) {
+        // ignore if blocked
+      }
+    }
+    // -------------------------------------------------
 
     // Types text into a container, one character at a time
     function typeText(container, text, onComplete) {
       let i = 0;
+      let typedCount = 0;
       const speed = 30; // ms per character
 
       function step() {
@@ -274,6 +302,14 @@
             container.innerHTML += "<br>";
           } else {
             container.innerHTML += char;
+
+            // play a small click every few non-space characters
+            if (char !== " " && char !== "\t") {
+              typedCount++;
+              if (typedCount % 2 === 0) {
+                playKeyClick();
+              }
+            }
           }
 
           i++;

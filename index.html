@@ -6,35 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>K1N0S.exe</title>
   <style>
-    body {
-      margin: 0;
-      background-color: black;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .logo {
-      max-width: 400px;
-      animation: flicker 4s infinite alternate;
-    }
-    @keyframes flicker {
-      0%   { opacity: 0.8; filter: blur(1px); }
-      50%  { opacity: 1; filter: blur(0px); }
-      100% { opacity: 0.6; filter: blur(1.5px); }
-    }
-  </style>
-</head>
-<body>
-  <div class="splash">
-  <img class="logo" src="A_digital_illustration_symbol_features_a_fractured.png" alt="K1N0S Symbol">
-    </div>
-  
-  <script>
-    setTimeout(() => {
-      window.location.href = "login.html";
-    }, 5000);
-  </script>
-</body>
+  body {
+    margin: 0;
+    background-color: black;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .logo {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;           /* fills screen, crops a bit */
+    animation: flicker 4s infinite alternate;
+    display: block;
+  }
+
+  @keyframes flicker {
+    0%   { opacity: 0.8; filter: blur(1px); }
+    50%  { opacity: 1;   filter: blur(0px); }
+    100% { opacity: 0.6; filter: blur(1.5px); }
+  }
+</style>
 </html>

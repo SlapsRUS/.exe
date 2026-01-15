@@ -235,23 +235,30 @@
     // --- AUDIO SETUP (ENTER BEEP + TYPING CLICKS) ---
     let audioCtx = null;
 
-    function ensureAudioContext() {
+    async function ensureAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
+      if (audioCtx.state === "suspended") {
+        try {
+          await audioCtx.resume();
+        } catch (e) {
+          // ignore if resume fails
+        }
+      }
     }
 
-    function playBeep() {
+    async function playBeep() {
       try {
-        ensureAudioContext();
+        await ensureAudioContext();
 
         const duration = 0.06; // seconds
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
         oscillator.type = "square";
-        oscillator.frequency.value = 800;      // Hz
-        gainNode.gain.value = 0.05;           // volume
+        oscillator.frequency.value = 900;      // Hz (slightly sharper)
+        gainNode.gain.value = 0.08;           // a bit louder
 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
@@ -264,29 +271,29 @@
       }
     }
 
-    function playKeyClick() {
+    async function playKeyClick() {
       try {
-        ensureAudioContext();
+        await ensureAudioContext();
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
         // Lower, thocky click with slight randomness
-        osc.frequency.value = 400 + Math.random() * 80;
+        osc.frequency.value = 450 + Math.random() * 120;
         osc.type = "square";
 
-        gain.gain.value = 0.04;
+        gain.gain.value = 0.06;
 
         const now = audioCtx.currentTime;
         // Fast decay so it feels like a mechanical tick
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.03);
+        osc.stop(now + 0.04);
       } catch (e) {
         // ignore if blocked
       }
@@ -341,7 +348,8 @@
 
     function handleCommand(event) {
       if (event.key === "Enter") {
-        playBeep(); // sound on submit
+        // fire and forget; we don't await so UI isn't blocked
+        playBeep();
 
         const cmd = cmdInput.value.trim().toLowerCase();
 

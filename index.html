@@ -18,9 +18,10 @@
     .logo {
       width: 100vw;
       height: 100vh;
-      object-fit: cover;          /* fills screen, may crop a bit */
+      object-fit: cover;          /* fills screen, may crop slightly */
       animation: flicker 4s infinite alternate;
       display: block;
+      cursor: pointer;
     }
 
     @keyframes flicker {
@@ -31,7 +32,19 @@
   </style>
 </head>
 <body>
-  <!-- Update src to your actual logo image path -->
-  <img src="A_digital_illustration_symbol_features_a_fractured.png" class="logo" />
+  <!-- Fullscreen splash; click or wait to enter -->
+  <img src="A_digital_illustration_symbol_features_a_fractured.png"
+       alt="Divine Core"
+       class="logo"
+       onclick="window.location.href='login.html'" />
+
+  <script>
+    // Auto-redirect to login after 3 seconds
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 3000);
+    });
+  </script>
 </body>
 </html>

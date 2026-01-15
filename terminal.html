@@ -13,7 +13,7 @@
       padding: 10px;
       position: relative;
       overflow-x: hidden;
-      transition: filter 0.15s ease;
+      transition: filter 0.12s ease;
     }
 
     /* Strong CRT / scanline overlay */
@@ -39,6 +39,11 @@
     /* Quick pulse effect for 1719 */
     body.pulse1719 {
       filter: brightness(2) contrast(1.4);
+    }
+
+    /* Glitch flash for invalid commands */
+    body.glitch {
+      filter: brightness(1.8) contrast(1.7) hue-rotate(8deg);
     }
 
     #terminal {
@@ -310,12 +315,22 @@
           return;
         }
 
-        // if 1719, trigger a quick visual pulse
+        // 1719: special pulse
         if (cmd === "1719") {
           document.body.classList.add("pulse1719");
           setTimeout(() => {
             document.body.classList.remove("pulse1719");
           }, 150);
+        }
+
+        const isKnown = Object.prototype.hasOwnProperty.call(responses, cmd);
+
+        // Glitch on unknown command (except clear, which we handled above)
+        if (!isKnown) {
+          document.body.classList.add("glitch");
+          setTimeout(() => {
+            document.body.classList.remove("glitch");
+          }, 130);
         }
 
         // Create a wrapper for the command + its output
@@ -333,7 +348,9 @@
         terminal.appendChild(wrapper);
 
         const responseText =
-          responses[cmd] || "Unrecognized command. Type 'help' for options.";
+          isKnown
+            ? responses[cmd]
+            : "Unrecognized command. Type 'help' for options.";
 
         // Type the response, then create a new prompt
         typeText(body, "\n" + responseText, createPromptLine);

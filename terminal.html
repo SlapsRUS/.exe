@@ -5,56 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K1N0S Terminal</title>
   <style>
-    body {
-      background-color: black;
-      color: #d4af37; /* gold */
-      font-family: 'Courier New', Courier, monospace;
-      margin: 0;
-      padding: 10px;
-      position: relative;
-      overflow-x: hidden;
-    }
+  body {
+    background-color: black;
+    color: #d4af37; /* gold */
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 10px;
+    position: relative;
+    overflow-x: hidden;
+  }
 
-    /* CRT / scanline overlay */
-    body::before {
-      content: "";
-      pointer-events: none;
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          rgba(212, 175, 55, 0.09) 0px,
-          rgba(212, 175, 55, 0.09) 1px,
-          transparent 2px,
-          transparent 3px
-        );
-      mix-blend-mode: soft-light;
-      opacity: 0.35;
-      z-index: 999;
-    }
+  /* Stronger CRT / scanline overlay for mobile + desktop */
+  body::before {
+    content: "";
+    pointer-events: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(212, 175, 55, 0.22) 0px,
+      rgba(212, 175, 55, 0.22) 2px,
+      transparent 2px,
+      transparent 5px
+    );
+    opacity: 0.6;           /* stronger so it’s visible on phones */
+    z-index: 999;
+  }
 
-    #terminal {
-      white-space: pre-wrap;
-      color: #d4af37;
-      text-shadow: 0 0 8px rgba(212, 175, 55, 0.6); /* glow */
-      position: relative;
-      z-index: 1;
-    }
+  #terminal {
+    white-space: pre-wrap;
+    color: #d4af37;
+    text-shadow:
+      0 0 4px rgba(212, 175, 55, 0.9),
+      0 0 10px rgba(212, 175, 55, 0.7); /* stronger glow */
+    position: relative;
+    z-index: 1;             /* keep terminal above background, below overlay */
+  }
 
-    input {
-      background: black;
-      color: #d4af37;
-      border: none;
-      font-family: inherit;
-      font-size: inherit;
-      width: 80%;
-      outline: none;
-    }
-  </style>
+  input {
+    background: black;
+    color: #d4af37;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    width: 80%;
+    outline: none;
+  }
+</style>
 </head>
 <body>
   <div id="terminal">

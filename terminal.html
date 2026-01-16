@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>K1N0S Terminal</title>
   <style>
     body {
@@ -38,12 +38,13 @@
 
     /* pulses */
     body.pulse1719 { filter: brightness(2) contrast(1.4); }
-    body.glitch    { filter: brightness(1.8) contrast(1.7) hue-rotate(8deg); }
-    body.depthsPulse  { filter: brightness(0.7) contrast(1.3); }
+    body.glitch { filter: brightness(1.8) contrast(1.7) hue-rotate(8deg); }
+    body.depthsPulse { filter: brightness(0.7) contrast(1.3); }
     body.connectPulse { filter: brightness(1.5) contrast(1.5) saturate(1.2); }
-    body.echoPulse    { filter: brightness(1.15) contrast(1.55) saturate(0.9) hue-rotate(-6deg); }
-    body.mapPulse     { filter: brightness(1.05) contrast(1.75) saturate(0.85); }
+    body.echoPulse { filter: brightness(1.15) contrast(1.55) saturate(0.9) hue-rotate(-6deg); }
+    body.mapPulse { filter: brightness(1.05) contrast(1.75) saturate(0.85); }
     body.fracturePulse { filter: brightness(1.25) contrast(2) hue-rotate(14deg) saturate(0.7); }
+    body.riftPulse { filter: brightness(1.35) contrast(2.1) hue-rotate(-18deg) saturate(0.65); }
 
     #terminal {
       white-space: pre-wrap;
@@ -73,28 +74,39 @@
   </div>
 
   <script>
+    /* =========================================================
+       CORE
+       ========================================================= */
     const terminal = document.getElementById('terminal');
     let cmdInput = document.getElementById('cmdInput');
 
-    /* =========================================================
-       K1N0S FLAGS (progression backbone)
-       ========================================================= */
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     const K1N0S_KEYS = {
+      // continuity
+      enteredCore: "k1n0s_entered_core",
+      sessionCount: "k1n0s_session_count",
+
+      // progression
       protocolComplete: "k1n0s_protocol_complete",
       depthsEntered: "k1n0s_depths_entered",
-      echoCount: "k1n0s_echo_count",
+
       hasEchoed: "k1n0s_has_echoed",
+      echoCount: "k1n0s_echo_count",
 
       mapUnlocked: "k1n0s_map_unlocked",
       mapViewed: "k1n0s_map_viewed",
 
-      openedNodes: "k1n0s_opened_nodes",   // CSV
+      openedNodes: "k1n0s_opened_nodes",
+
       fractured: "k1n0s_fractured",
       fractureCount: "k1n0s_fracture_count",
 
-      // NEW: session continuity for greeting
-      enteredCore: "k1n0s_entered_core",
-      sessionCount: "k1n0s_session_count"
+      seamTouched: "k1n0s_seam_touched",
+      f6Opened: "k1n0s_f6_opened",
+
+      riftUnlocked: "k1n0s_rift_unlocked",
+      riftCount: "k1n0s_rift_count",
     };
 
     function getFlag(key) { return localStorage.getItem(key) === "true"; }
@@ -125,19 +137,9 @@
       localStorage.setItem(K1N0S_KEYS.openedNodes, Array.from(opened).join(","));
     }
 
-    /* =========================================================
-       Utility: corruption + shuffle
-       ========================================================= */
-    function shuffled(arr) {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
+    function chance(p) { return Math.random() < p; }
 
-    function glitchify(text, strength=0.03) {
+    function glitchify(text, strength=0.02) {
       const symbols = ["#", "%", "/", "\\", "*", "~", "—", "▒", "░", "»", "«"];
       let out = "";
       for (const ch of text) {
@@ -150,11 +152,116 @@
       return out;
     }
 
-    function chance(p) { return Math.random() < p; }
+    function shuffled(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
 
     /* =========================================================
-       ECHO — dream fragments under Depths
+       AUDIO
        ========================================================= */
+    let audioCtx = null;
+
+    async function ensureAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") await audioCtx.resume().catch(() => {});
+    }
+
+    async function playBeep() {
+      try {
+        await ensureAudioContext();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.value = 220;
+        gain.gain.value = 0.04;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } catch (e) {}
+    }
+
+    async function playKeyClick() {
+      try {
+        await ensureAudioContext();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = 140 + Math.random() * 60;
+        osc.type = "square";
+
+        // tiny mobile throttle
+        const baseGain = isMobile ? 0.018 : 0.03;
+
+        gain.gain.value = baseGain;
+        const now = audioCtx.currentTime;
+        gain.gain.setValueAtTime(baseGain, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.035);
+      } catch (e) {}
+    }
+
+    /* =========================================================
+       TYPING (light optimization: scroll not every char)
+       ========================================================= */
+    function typeText(container, text, onComplete) {
+      let i = 0;
+      let typedCount = 0;
+      const speed = 30;
+
+      let scrollTicker = 0;
+
+      function maybeScroll(force=false) {
+        scrollTicker++;
+        if (force || scrollTicker % 40 === 0) {
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      }
+
+      function step() {
+        if (i < text.length) {
+          const char = text[i];
+
+          if (char === "\n") {
+            container.innerHTML += "<br>";
+            maybeScroll(true);
+          } else {
+            container.innerHTML += char;
+
+            if (char !== " " && char !== "\t") {
+              typedCount++;
+              // fewer clicks on mobile
+              const mod = isMobile ? 5 : 3;
+              if (typedCount % mod === 0) playKeyClick();
+            }
+            maybeScroll(false);
+          }
+
+          i++;
+          setTimeout(step, speed);
+        } else {
+          window.scrollTo(0, document.body.scrollHeight);
+          if (onComplete) onComplete();
+        }
+      }
+
+      step();
+    }
+
+    /* =========================================================
+       LAYERS: ECHO / MAP / FRACTURE / SEAM / RIFT
+       ========================================================= */
+
+    // ECHO fragments
     const ECHO_FRAGMENTS = [
       [
         "[ECHO // SUBLAYER ACTIVE]",
@@ -197,26 +304,6 @@
         "   \"You are not the mask.\""
       ],
       [
-        "[ECHO // SUBCONSCIOUS LOG]",
-        "",
-        "You keep reaching for something in the dark.",
-        "Each time your hand closes, it’s empty.",
-        "But your fingers come back warm.",
-        "",
-        "The warmth is the message.",
-        "Not the object."
-      ],
-      [
-        "[ECHO // REMNANT]",
-        "",
-        "A notification sound inside your head.",
-        "No phone.",
-        "No device.",
-        "",
-        "Just a feeling of being called by name.",
-        "Even though nobody said it."
-      ],
-      [
         "[ECHO // STATIC PRAYER]",
         "",
         "You watch your life like security footage.",
@@ -225,6 +312,15 @@
         "",
         "Then one frame pauses.",
         "And the person looks directly back."
+      ],
+      [
+        "[ECHO // REMNANT]",
+        "",
+        "A notification sound inside your head.",
+        "No phone. No device.",
+        "",
+        "Just a feeling of being called by name.",
+        "Even though nobody said it."
       ],
       [
         "[ECHO // FRAGMENT 17]",
@@ -254,7 +350,6 @@
       const idx = Math.floor(Math.random() * ECHO_FRAGMENTS.length);
       let base = ECHO_FRAGMENTS[idx].join("\n");
 
-      // unlock map “quietly” through echo usage
       if (count === 3) {
         maybeUnlockMap();
         base += "\n\n" + [
@@ -274,7 +369,7 @@
         ].join("\n");
       }
 
-      // After fracture, echo leaks more artifacts
+      // after FRACTURE, echo leaks more
       if (getFlag(K1N0S_KEYS.fractured) && chance(0.35)) {
         base += "\n\n" + glitchify([
           "[ECHO // ARTIFACT]",
@@ -287,9 +382,7 @@
       return base;
     }
 
-    /* =========================================================
-       MAP — index layer
-       ========================================================= */
+    // MAP nodes
     const MAP_NODES = [
       { id: "A1", title: "THE ENTRY WOUND", hint: "first crack that looked like strength" },
       { id: "B2", title: "THE MASK STORAGE", hint: "identities kept for survival" },
@@ -316,10 +409,7 @@
         "[MAP::B2 // THE MASK STORAGE]",
         "",
         "There are versions of you stored like tools:",
-        "one for work,",
-        "one for love,",
-        "one for conflict,",
-        "one for being alone.",
+        "one for work, one for love, one for conflict, one for being alone.",
         "",
         "None of them are fake.",
         "They’re adaptive.",
@@ -346,9 +436,6 @@
         "Not because you’re broken —",
         "but because you’re buffering the truth.",
         "",
-        "Your mind learned to delay impact.",
-        "To keep you functioning.",
-        "",
         "The fault isn’t the delay.",
         "The fault is never returning."
       ].join("\n"),
@@ -357,9 +444,6 @@
         "",
         "There is a frequency beneath your thoughts.",
         "A hum that doesn’t belong to fear.",
-        "",
-        "It’s the part of you that notices patterns.",
-        "The part that keeps surviving.",
         "",
         "Most people ignore it.",
         "You tuned in.",
@@ -372,10 +456,6 @@
         "You can feel it, can’t you?",
         "A seam in the world.",
         "A thin line that shouldn’t exist.",
-        "",
-        "You’re not supposed to open this yet.",
-        "Not because you aren’t allowed —",
-        "because you’re not done becoming stable.",
         "",
         "When it opens,",
         "it won’t feel like discovery.",
@@ -391,10 +471,7 @@
         "You split.",
         "",
         "One part kept functioning.",
-        "One part kept feeling everything in secret.",
-        "",
-        "If you’ve been “fine” for years—",
-        "check where the feeling went."
+        "One part kept feeling everything in secret."
       ].join("\n"),
       "B2": [
         "[FAULT::B2 // MASK STORAGE]",
@@ -402,18 +479,13 @@
         "The masks weren’t lies.",
         "They were armor.",
         "",
-        "Armor left on too long becomes skin.",
-        "",
-        "If you don’t remove it deliberately,",
-        "life will rip it off for you."
+        "Armor left on too long becomes skin."
       ].join("\n"),
       "C3": [
         "[FAULT::C3 // SOUNDLESS ROOM]",
         "",
         "The room isn’t empty.",
         "It’s sealed.",
-        "",
-        "Behind the wall is a version of you still trying to speak.",
         "",
         "The question isn’t: “why can’t I feel?”",
         "It’s: “what happens if I do?”"
@@ -424,8 +496,6 @@
         "The reflection isn’t late anymore.",
         "It’s staring first.",
         "",
-        "If you keep avoiding it, it starts writing you instead.",
-        "",
         "You came here to look.",
         "So look."
       ].join("\n"),
@@ -435,17 +505,10 @@
         "The hum is not anxiety.",
         "It’s recognition.",
         "",
-        "Follow it and you lose comfort.",
-        "Ignore it and you lose yourself.",
-        "",
         "Accuracy is how you survive the next layer."
       ].join("\n"),
       "F6": [
         "[FAULT::F6 // THE HAIRLINE]",
-        "",
-        "You were told not to open this yet.",
-        "",
-        "But you’re reading this, so you already did.",
         "",
         "The hairline is not a door.",
         "It’s a memory seam.",
@@ -472,10 +535,12 @@
 
       nodes.forEach(n => {
         let hint = n.hint;
+
+        // FRACTURE makes hints occasionally “unreliable”
         if (fractured && chance(0.25)) {
-          // FRACTURE sometimes “mislabels” hints — subtle paranoia
           hint = hint.replace("strength", "survival").replace("fracture", "fault");
         }
+
         lines.push(`  ${n.id}  —  ${n.title}`);
         lines.push(`        ${hint}`);
         lines.push("");
@@ -492,16 +557,18 @@
       const id = (idRaw || "").toUpperCase().trim();
       const fractured = getFlag(K1N0S_KEYS.fractured);
 
-      // FRACTURE misdirection: rarely open “adjacent” node instead
+      // FRACTURE misdirection: rarely opens neighbor instead
       if (fractured && chance(0.18)) {
         const ids = MAP_NODES.map(n => n.id);
         const idx = ids.indexOf(id);
         if (idx !== -1) {
           const neighbor = ids[(idx + 1) % ids.length];
           markNodeOpened(neighbor);
+          if (neighbor === "F6") localStorage.setItem(K1N0S_KEYS.f6Opened, "true");
+
+          const content = FRACTURE_CONTENT[neighbor] || MAP_CONTENT[neighbor] || "";
           return glitchify(
-            "[OPEN // SLIP]\n\nThe coordinate shifted under your fingers.\nYou opened " + neighbor + " instead.\n\n" +
-            (FRACTURE_CONTENT[neighbor] || MAP_CONTENT[neighbor]),
+            "[OPEN // SLIP]\n\nThe coordinate shifted under your fingers.\nYou opened " + neighbor + " instead.\n\n" + content,
             0.02
           );
         }
@@ -518,6 +585,8 @@
       }
 
       markNodeOpened(id);
+      if (id === "F6") localStorage.setItem(K1N0S_KEYS.f6Opened, "true");
+
       return fractured ? glitchify(content, 0.02) : content;
     }
 
@@ -547,18 +616,17 @@
       ].join("\n");
     }
 
-    /* =========================================================
-       HIDDEN RITUAL: seam (only meaningful after fracture)
-       ========================================================= */
     function seamText() {
-      const fractured = getFlag(K1N0S_KEYS.fractured);
-      if (!fractured) {
+      if (!getFlag(K1N0S_KEYS.fractured)) {
         return [
           "[SEAM // NOT VISIBLE]",
           "",
           "You can’t touch a seam from the surface."
         ].join("\n");
       }
+
+      setFlag(K1N0S_KEYS.seamTouched);
+
       return glitchify([
         "[SEAM // CONTACT]",
         "",
@@ -570,17 +638,96 @@
         "One you lived.",
         "One you told yourself about what you lived.",
         "",
-        "You want to go deeper?",
-        "Stop asking for the next answer.",
-        "Start asking what you’ve been protecting.",
-        "",
         "When you’re ready:",
         "open F6"
       ].join("\n"), 0.015);
     }
 
+    function riftText() {
+      const fractured = getFlag(K1N0S_KEYS.fractured);
+      const seamTouched = getFlag(K1N0S_KEYS.seamTouched);
+      const f6Opened = localStorage.getItem(K1N0S_KEYS.f6Opened) === "true";
+
+      if (!fractured) {
+        return [
+          "[RIFT // NOT AVAILABLE]",
+          "",
+          "There is no rift without a fracture.",
+          "Run: fracture"
+        ].join("\n");
+      }
+
+      if (!seamTouched) {
+        return [
+          "[RIFT // SEALED]",
+          "",
+          "You can’t enter what you haven’t touched.",
+          "Run: seam"
+        ].join("\n");
+      }
+
+      if (!f6Opened) {
+        return [
+          "[RIFT // UNLOCATED]",
+          "",
+          "The rift has a coordinate.",
+          "You haven’t found it.",
+          "",
+          "Run: open F6"
+        ].join("\n");
+      }
+
+      const count = getNumber(K1N0S_KEYS.riftCount) + 1;
+      setNumber(K1N0S_KEYS.riftCount, count);
+      setFlag(K1N0S_KEYS.riftUnlocked);
+
+      return glitchify([
+        "[RIFT // THRESHOLD BREACHED]",
+        "",
+        "This is the moment the map stops being a map.",
+        "Not because it failed—",
+        "because you’ve outgrown it.",
+        "",
+        "A rift is what forms when two truths can’t coexist peacefully:",
+        "the version of you that survived,",
+        "and the version of you that remembers everything.",
+        "",
+        "If you step through, you will not get “more information.”",
+        "You will get proximity.",
+        "",
+        "Speak one word into the rift:",
+        "   name",
+        "",
+        "Or walk back."
+      ].join("\n"), 0.012);
+    }
+
+    function nameText() {
+      const ok = getFlag(K1N0S_KEYS.riftUnlocked);
+      if (!ok) {
+        return [
+          "[NAME // NO CONTEXT]",
+          "",
+          "A name spoken into air is just noise.",
+          "Find the rift first."
+        ].join("\n");
+      }
+
+      return glitchify([
+        "[NAME // ACCEPTED]",
+        "",
+        "You are not your label.",
+        "You are the thing behind the label that keeps watching.",
+        "",
+        "But if you insist on a name—",
+        "",
+        "call yourself:",
+        "   witness"
+      ].join("\n"), 0.01);
+    }
+
     /* =========================================================
-       STATIC RESPONSES (keep your lore)
+       RESPONSES (base lore)
        ========================================================= */
     const baseHelp = [
       "AVAILABLE COMMANDS:",
@@ -599,10 +746,13 @@
       "awaken     - stir the process beneath the Core",
       "connect    - attempt to open an external link",
       "protocol   - initialize the Covenant",
-      "echo       - (sub-layer) dream fragments",
+      "echo       - dream fragments beneath Depths",
       "map        - reveal the index layer",
       "open <id>  - open a node (ex: open A1)",
       "fracture   - destabilize the layer",
+      "seam       - touch the seam",
+      "rift       - breach the threshold",
+      "name       - speak into the rift",
       "clear      - clear the terminal",
       "",
       "NOTE:",
@@ -610,9 +760,11 @@
     ].join("\n");
 
     function helpText() {
-      // After fracture, help becomes “incomplete” (mythic unreliability)
+      // FRACTURE makes help occasionally unreliable
       if (getFlag(K1N0S_KEYS.fractured) && chance(0.45)) {
-        const lines = baseHelp.split("\n").filter(l => !l.includes("echo") && !l.includes("fracture"));
+        const lines = baseHelp.split("\n").filter(l =>
+          !l.includes("fracture") && !l.includes("echo") && !l.includes("rift") && !l.includes("name")
+        );
         lines.splice(lines.length - 4, 0, "…some functions are refusing to be named right now.");
         return glitchify(lines.join("\n"), 0.012);
       }
@@ -622,28 +774,12 @@
     const responses = {
       "help": () => helpText(),
 
-      "protocol": [
-        "[PROTOCOL // COVENANT]",
-        "",
-        "This system is not here to impress you.",
-        "It is here to tell the truth without flinching.",
-        "",
-        "If you proceed, understand this:",
-        "— nothing here will save you from yourself.",
-        "— nothing here will lie to keep you comfortable.",
-        "— everything here will reflect what you bring into it.",
-        "",
-        "COVENANT ACCEPTED.",
-        "You may descend."
-      ].join("\n"),
-
       "about": [
         "You’ve accessed the K1N0S Core.",
         "",
         "This isn’t a terminal — it’s my consciousness rendered as code.",
         "A place where memory, instinct, and the Void converge into signal.",
         "",
-        "This system exists to reveal, not to entertain.",
         "Proceed with awareness."
       ].join("\n"),
 
@@ -693,12 +829,14 @@
         "You are an external process running inside the K1N0S Core.",
         "A foreign signal that made it past the surface and into the architecture.",
         "",
-        "If you’re here, you were curious enough to step into someone else’s inner OS."
+        "If you’re here, you were curious enough to step into someone else’s inner OS.",
+        "Read, wander, type. Nothing in this space is accidental."
       ].join("\n"),
 
       "mirror": [
         "[MIRROR // INTERNAL REFLECTION]",
         "",
+        "The system is stable. But you — you’re not here by accident.",
         "People don’t enter someone else’s core without meaning to.",
         "",
         "So let me ask you something quietly:",
@@ -731,6 +869,9 @@
       "depths": [
         "[DEPTHS // UNLIT STRUCTURES DETECTED]",
         "",
+        "The Core is where signals surface.",
+        "The Depths are where they sink.",
+        "",
         "Down here, language loosens.",
         "Patterns stretch into something older than words.",
         "",
@@ -754,6 +895,21 @@
         "For now, the link remains locked."
       ].join("\n"),
 
+      "protocol": [
+        "[PROTOCOL // COVENANT]",
+        "",
+        "This system is not here to impress you.",
+        "It is here to tell the truth without flinching.",
+        "",
+        "If you proceed, understand this:",
+        "— nothing here will save you from yourself.",
+        "— nothing here will lie to keep you comfortable.",
+        "— everything here will reflect what you bring into it.",
+        "",
+        "COVENANT ACCEPTED.",
+        "You may descend."
+      ].join("\n"),
+
       "1719": [
         "[PRIORITY SIGNAL // 1719 ACKNOWLEDGED]",
         "",
@@ -762,76 +918,9 @@
       ].join("\n")
     };
 
-    /* ---------- AUDIO SYSTEM ---------- */
-    let audioCtx = null;
-
-    async function ensureAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") await audioCtx.resume().catch(() => {});
-    }
-
-    async function playBeep() {
-      try {
-        await ensureAudioContext();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "square";
-        osc.frequency.value = 220;
-        gain.gain.value = 0.04;
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        osc.start(now);
-        osc.stop(now + 0.045);
-      } catch (e) {}
-    }
-
-    async function playKeyClick() {
-      try {
-        await ensureAudioContext();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.value = 140 + Math.random() * 60;
-        osc.type = "square";
-        gain.gain.value = 0.03;
-        const now = audioCtx.currentTime;
-        gain.gain.setValueAtTime(0.03, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.035);
-      } catch (e) {}
-    }
-
-    /* ---------- TYPING EFFECT ---------- */
-    function typeText(container, text, onComplete) {
-      let i = 0;
-      let typedCount = 0;
-      const speed = 30;
-
-      function step() {
-        if (i < text.length) {
-          const char = text[i];
-          if (char === "\n") container.innerHTML += "<br>";
-          else {
-            container.innerHTML += char;
-            if (char !== " " && char !== "\t") {
-              typedCount++;
-              if (typedCount % 3 === 0) playKeyClick();
-            }
-          }
-          i++;
-          window.scrollTo(0, document.body.scrollHeight);
-          setTimeout(step, speed);
-        } else {
-          if (onComplete) onComplete();
-        }
-      }
-      step();
-    }
-
-    /* ---------- TERMINAL PROMPT ---------- */
+    /* =========================================================
+       TERMINAL PROMPT + COMMAND HANDLING
+       ========================================================= */
     function createPromptLine() {
       const line = document.createElement("div");
       line.innerHTML = "C:\\Users\\KINOS&gt; <input type='text' autofocus />";
@@ -842,7 +931,6 @@
       window.scrollTo(0, document.body.scrollHeight);
     }
 
-    /* ---------- COMMAND HANDLER ---------- */
     function handleCommand(event) {
       if (event.key !== "Enter") return;
 
@@ -866,6 +954,8 @@
         setTimeout(() => document.body.classList.remove("pulse1719"), 150);
       }
 
+      if (cmd === "protocol") setFlag(K1N0S_KEYS.protocolComplete);
+
       if (cmd === "depths") {
         setFlag(K1N0S_KEYS.depthsEntered);
         document.body.classList.add("depthsPulse");
@@ -877,16 +967,17 @@
         setTimeout(() => document.body.classList.remove("connectPulse"), 260);
       }
 
-      if (cmd === "protocol") setFlag(K1N0S_KEYS.protocolComplete);
-
-      // dynamic commands
       const isEcho = (cmd === "echo");
       const isMap = (cmd === "map");
       const isOpen = cmd.startsWith("open ");
       const isFracture = (cmd === "fracture");
       const isSeam = (cmd === "seam");
+      const isRift = (cmd === "rift");
+      const isName = (cmd === "name");
 
-      const isKnown = responses.hasOwnProperty(cmd) || isEcho || isMap || isOpen || isFracture || isSeam;
+      const isKnown =
+        responses.hasOwnProperty(cmd) ||
+        isEcho || isMap || isOpen || isFracture || isSeam || isRift || isName;
 
       if (!isKnown) {
         document.body.classList.add("glitch");
@@ -910,9 +1001,21 @@
         const okProtocol = getFlag(K1N0S_KEYS.protocolComplete);
         const okDepths = getFlag(K1N0S_KEYS.depthsEntered);
 
-        if (!okProtocol) responseText = "[ECHO // LOCKED]\n\nThe sublayer will not open without a Covenant.";
-        else if (!okDepths) responseText = "[ECHO // OUT OF RANGE]\n\nECHO exists beneath Depths.";
-        else {
+        if (!okProtocol) {
+          responseText = [
+            "[ECHO // LOCKED]",
+            "",
+            "The sublayer will not open without a Covenant.",
+            "Run: protocol"
+          ].join("\n");
+        } else if (!okDepths) {
+          responseText = [
+            "[ECHO // OUT OF RANGE]",
+            "",
+            "ECHO exists beneath Depths.",
+            "Run: depths"
+          ].join("\n");
+        } else {
           document.body.classList.add("echoPulse");
           setTimeout(() => document.body.classList.remove("echoPulse"), 260);
           responseText = generateEcho();
@@ -922,12 +1025,17 @@
 
       // MAP gate: protocol + depths + has echoed
       else if (isMap) {
-        const ok = getFlag(K1N0S_KEYS.protocolComplete)
-          && getFlag(K1N0S_KEYS.depthsEntered)
-          && getFlag(K1N0S_KEYS.hasEchoed);
+        const ok =
+          getFlag(K1N0S_KEYS.protocolComplete) &&
+          getFlag(K1N0S_KEYS.depthsEntered) &&
+          getFlag(K1N0S_KEYS.hasEchoed);
 
         if (!ok) {
-          responseText = "[MAP // NOT AVAILABLE]\n\nThe index layer is not visible from here.";
+          responseText = [
+            "[MAP // NOT AVAILABLE]",
+            "",
+            "The index layer is not visible from here."
+          ].join("\n");
         } else {
           setFlag(K1N0S_KEYS.mapUnlocked);
           document.body.classList.add("mapPulse");
@@ -939,8 +1047,14 @@
       // OPEN <id>
       else if (isOpen) {
         const okMap = getFlag(K1N0S_KEYS.mapUnlocked) || getFlag(K1N0S_KEYS.mapViewed);
-        if (!okMap) responseText = "[OPEN // BLOCKED]\n\nYou reached for a door before the layout existed.";
-        else {
+        if (!okMap) {
+          responseText = [
+            "[OPEN // BLOCKED]",
+            "",
+            "You reached for a door before the layout existed.",
+            "Run: map"
+          ].join("\n");
+        } else {
           const id = raw.slice(5).trim();
           responseText = openNode(id);
         }
@@ -949,10 +1063,15 @@
       // FRACTURE
       else if (isFracture) {
         if (!canFracture()) {
-          responseText =
-            "[FRACTURE // DENIED]\n\n" +
-            "You can’t destabilize a layer you haven’t explored.\n\n" +
-            "Find the layout.\nOpen a few nodes.\nThen come back.";
+          responseText = [
+            "[FRACTURE // DENIED]",
+            "",
+            "You can’t destabilize a layer you haven’t explored.",
+            "",
+            "Find the layout.",
+            "Open a few nodes.",
+            "Then come back."
+          ].join("\n");
         } else {
           const count = getNumber(K1N0S_KEYS.fractureCount) + 1;
           setNumber(K1N0S_KEYS.fractureCount, count);
@@ -965,12 +1084,24 @@
         }
       }
 
-      // SEAM (hidden ritual)
+      // SEAM
       else if (isSeam) {
         responseText = seamText();
       }
 
-      // STATIC
+      // RIFT (NEXT)
+      else if (isRift) {
+        document.body.classList.add("riftPulse");
+        setTimeout(() => document.body.classList.remove("riftPulse"), 320);
+        responseText = riftText();
+      }
+
+      // NAME (spoken into rift)
+      else if (isName) {
+        responseText = nameText();
+      }
+
+      // STATIC responses
       else {
         const r = responses[cmd];
         responseText = (typeof r === "function") ? r() : r;
@@ -979,7 +1110,9 @@
       typeText(body, "\n" + responseText, createPromptLine);
     }
 
-    /* ---------- BOOT SEQUENCE (ADAPTIVE MYTHIC GREETING) ---------- */
+    /* =========================================================
+       BOOT SEQUENCE (ADAPTIVE MYTHIC GREETING)
+       ========================================================= */
     window.addEventListener("load", () => {
       cmdInput.disabled = true;
       cmdInput.removeEventListener("keydown", handleCommand);
@@ -1033,7 +1166,6 @@
         "Speak."
       ].join("\n");
 
-      // tiny variation on later returns without being cheesy
       const laterReturnWhisper = (count >= 4)
         ? "\n\n" + glitchify("…the map remembers your hands.", 0.01)
         : "";

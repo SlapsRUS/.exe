@@ -56,6 +56,11 @@
       filter: brightness(1.5) contrast(1.5) saturate(1.2);
     }
 
+    /* echo: faint uncanny shimmer */
+    body.echoPulse {
+      filter: brightness(1.15) contrast(1.55) saturate(0.9) hue-rotate(-6deg);
+    }
+
     #terminal {
       white-space: pre-wrap;
       color: #d4af37;
@@ -88,6 +93,144 @@
     const terminal = document.getElementById('terminal');
     let cmdInput = document.getElementById('cmdInput');
 
+    /* =========================================================
+       K1N0S FLAGS (Kv progression backbone)
+       ========================================================= */
+    const K1N0S_KEYS = {
+      protocolComplete: "k1n0s_protocol_complete",
+      depthsEntered: "k1n0s_depths_entered",
+      echoCount: "k1n0s_echo_count"
+    };
+
+    function getFlag(key) {
+      return localStorage.getItem(key) === "true";
+    }
+
+    function setFlag(key) {
+      localStorage.setItem(key, "true");
+    }
+
+    function getNumber(key) {
+      const n = parseInt(localStorage.getItem(key) || "0", 10);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function setNumber(key, value) {
+      localStorage.setItem(key, String(value));
+    }
+
+    /* =========================================================
+       ECHO FRAGMENTS (dream / subconscious layer under Depths)
+       - random
+       - symbolic
+       - not explanatory
+       ========================================================= */
+    const ECHO_FRAGMENTS = [
+      [
+        "[ECHO // SUBLAYER ACTIVE]",
+        "",
+        "You are walking through a hallway you don’t remember building.",
+        "Every door has your name on it.",
+        "None of them open the same way twice.",
+        "",
+        "A voice behind the walls repeats:",
+        "   \"not yet\""
+      ],
+      [
+        "[ECHO // DREAM RESIDUE]",
+        "",
+        "You taste metal. Not blood — memory.",
+        "A childhood room flashes for half a second.",
+        "Then vanishes like it never existed.",
+        "",
+        "Something in you whispers:",
+        "   \"You survived by forgetting.\""
+      ],
+      [
+        "[ECHO // SYMBOLIC WHISPER]",
+        "",
+        "A mirror reflects a version of you that keeps blinking out of sync.",
+        "You try to speak.",
+        "The reflection answers first.",
+        "",
+        "It says:",
+        "   \"Stop calling it anxiety. It’s recognition.\""
+      ],
+      [
+        "[ECHO // DISTORTION FIELD]",
+        "",
+        "You’re underwater, but you can breathe.",
+        "The surface looks like the sky.",
+        "The sky looks like a screen.",
+        "",
+        "Across it, one sentence scrolls forever:",
+        "   \"You are not the mask.\""
+      ],
+      [
+        "[ECHO // SUBCONSCIOUS LOG]",
+        "",
+        "You keep reaching for something in the dark.",
+        "Each time your hand closes, it’s empty.",
+        "But your fingers come back warm.",
+        "",
+        "The warmth is the message.",
+        "Not the object."
+      ],
+      [
+        "[ECHO // REMNANT]",
+        "",
+        "A notification sound inside your head.",
+        "No phone.",
+        "No device.",
+        "",
+        "Just a feeling of being called by name.",
+        "Even though nobody said it."
+      ],
+      [
+        "[ECHO // STATIC PRAYER]",
+        "",
+        "You watch your life like security footage.",
+        "You recognize the body.",
+        "You don’t recognize the person.",
+        "",
+        "Then one frame pauses.",
+        "And the person looks directly back."
+      ],
+      [
+        "[ECHO // FRAGMENT 17]",
+        "",
+        "A number burns behind your eyes.",
+        "Not 1719.",
+        "Something older.",
+        "",
+        "You try to remember it.",
+        "The act of remembering deletes it."
+      ]
+    ];
+
+    function generateEcho() {
+      // increment count
+      const count = getNumber(K1N0S_KEYS.echoCount) + 1;
+      setNumber(K1N0S_KEYS.echoCount, count);
+
+      // pick a fragment
+      const idx = Math.floor(Math.random() * ECHO_FRAGMENTS.length);
+      const base = ECHO_FRAGMENTS[idx].join("\n");
+
+      // rare subtle “deeper” line after a few uses (for future MAP/FRACTURE hooks)
+      if (count === 5) {
+        return base + "\n\n" + [
+          "",
+          "A low hum appears under your thoughts.",
+          "It feels like a question you’ve been dodging.",
+          "",
+          "Type: map"
+        ].join("\n");
+      }
+
+      return base;
+    }
+
     const responses = {
 
       "help": [
@@ -106,7 +249,23 @@
         "depths     - descend beneath the Core",
         "awaken     - stir the process beneath the Core",
         "connect    - attempt to open an external link",
+        "protocol   - initialize the Covenant",
         "clear      - clear the terminal"
+      ].join("\n"),
+
+      "protocol": [
+        "[PROTOCOL // COVENANT]",
+        "",
+        "This system is not here to impress you.",
+        "It is here to tell the truth without flinching.",
+        "",
+        "If you proceed, understand this:",
+        "— nothing here will save you from yourself.",
+        "— nothing here will lie to keep you comfortable.",
+        "— everything here will reflect what you bring into it.",
+        "",
+        "COVENANT ACCEPTED.",
+        "You may descend."
       ].join("\n"),
 
       "about": [
@@ -340,7 +499,6 @@
         "Consider this confirmation:",
         "You were meant to find this place."
       ].join("\n")
-
     };
 
     /* ---------- AUDIO SYSTEM ---------- */
@@ -355,47 +513,35 @@
       }
     }
 
-    /* Deep, soft enter beep */
     async function playBeep() {
       try {
         await ensureAudioContext();
-
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = "square";
-        osc.frequency.value = 220; // deep tone
+        osc.frequency.value = 220;
         gain.gain.value = 0.04;
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         const now = audioCtx.currentTime;
         osc.start(now);
         osc.stop(now + 0.045);
       } catch (e) {}
     }
 
-    /* Deep, soft typing click */
     async function playKeyClick() {
       try {
         await ensureAudioContext();
-
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
-        osc.frequency.value = 140 + Math.random() * 60; // 140–200 Hz
+        osc.frequency.value = 140 + Math.random() * 60;
         osc.type = "square";
-
         gain.gain.value = 0.03;
-
         const now = audioCtx.currentTime;
         gain.gain.setValueAtTime(0.03, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start(now);
         osc.stop(now + 0.035);
       } catch (e) {}
@@ -410,20 +556,15 @@
       function step() {
         if (i < text.length) {
           const char = text[i];
-
           if (char === "\n") {
             container.innerHTML += "<br>";
           } else {
             container.innerHTML += char;
-
             if (char !== " " && char !== "\t") {
               typedCount++;
-              if (typedCount % 3 === 0) {
-                playKeyClick();
-              }
+              if (typedCount % 3 === 0) playKeyClick();
             }
           }
-
           i++;
           window.scrollTo(0, document.body.scrollHeight);
           setTimeout(step, speed);
@@ -431,7 +572,6 @@
           if (onComplete) onComplete();
         }
       }
-
       step();
     }
 
@@ -460,34 +600,33 @@
           return;
         }
 
+        // pulses
         if (cmd === "1719") {
           document.body.classList.add("pulse1719");
-          setTimeout(() => {
-            document.body.classList.remove("pulse1719");
-          }, 150);
+          setTimeout(() => document.body.classList.remove("pulse1719"), 150);
         }
-
         if (cmd === "depths") {
+          setFlag(K1N0S_KEYS.depthsEntered);
           document.body.classList.add("depthsPulse");
-          setTimeout(() => {
-            document.body.classList.remove("depthsPulse");
-          }, 320);
+          setTimeout(() => document.body.classList.remove("depthsPulse"), 320);
         }
-
         if (cmd === "connect") {
           document.body.classList.add("connectPulse");
-          setTimeout(() => {
-            document.body.classList.remove("connectPulse");
-          }, 260);
+          setTimeout(() => document.body.classList.remove("connectPulse"), 260);
         }
 
-        const isKnown = responses.hasOwnProperty(cmd);
+        // PROTOCOL completion tracking
+        if (cmd === "protocol") {
+          setFlag(K1N0S_KEYS.protocolComplete);
+        }
+
+        // ECHO (dynamic) — locked behind protocol + depths
+        let isEcho = (cmd === "echo");
+        let isKnown = responses.hasOwnProperty(cmd) || isEcho;
 
         if (!isKnown) {
           document.body.classList.add("glitch");
-          setTimeout(() => {
-            document.body.classList.remove("glitch");
-          }, 130);
+          setTimeout(() => document.body.classList.remove("glitch"), 130);
         }
 
         const wrapper = document.createElement("div");
@@ -500,9 +639,36 @@
 
         terminal.appendChild(wrapper);
 
-        const responseText = isKnown
-          ? responses[cmd]
-          : "Unrecognized command. Type 'help' for options.";
+        let responseText = "";
+
+        if (isEcho) {
+          const okProtocol = getFlag(K1N0S_KEYS.protocolComplete);
+          const okDepths = getFlag(K1N0S_KEYS.depthsEntered);
+
+          if (!okProtocol) {
+            responseText = [
+              "[ECHO // LOCKED]",
+              "",
+              "The sublayer will not open without a Covenant.",
+              "Run: protocol"
+            ].join("\n");
+          } else if (!okDepths) {
+            responseText = [
+              "[ECHO // OUT OF RANGE]",
+              "",
+              "ECHO exists beneath Depths.",
+              "Descend first. Run: depths"
+            ].join("\n");
+          } else {
+            document.body.classList.add("echoPulse");
+            setTimeout(() => document.body.classList.remove("echoPulse"), 260);
+            responseText = generateEcho();
+          }
+        } else {
+          responseText = isKnown
+            ? responses[cmd]
+            : "Unrecognized command. Type 'help' for options.";
+        }
 
         typeText(body, "\n" + responseText, createPromptLine);
       }

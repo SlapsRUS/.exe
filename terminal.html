@@ -21,10 +21,8 @@
       content: "";
       pointer-events: none;
       position: fixed;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
       background-image: repeating-linear-gradient(
         to bottom,
         rgba(212, 175, 55, 0.22) 0px,
@@ -75,8 +73,9 @@
 
   <script>
     /* =========================================================
-       CORE
+       K1N0S — TERMINAL (STEP 3: RECOGNITION)
        ========================================================= */
+
     const terminal = document.getElementById('terminal');
     let cmdInput = document.getElementById('cmdInput');
 
@@ -195,10 +194,9 @@
         osc.frequency.value = 140 + Math.random() * 60;
         osc.type = "square";
 
-        // tiny mobile throttle
         const baseGain = isMobile ? 0.018 : 0.03;
-
         gain.gain.value = baseGain;
+
         const now = audioCtx.currentTime;
         gain.gain.setValueAtTime(baseGain, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
@@ -211,7 +209,7 @@
     }
 
     /* =========================================================
-       TYPING (light optimization: scroll not every char)
+       TYPING (scroll not every char)
        ========================================================= */
     function typeText(container, text, onComplete) {
       let i = 0;
@@ -219,7 +217,6 @@
       const speed = 30;
 
       let scrollTicker = 0;
-
       function maybeScroll(force=false) {
         scrollTicker++;
         if (force || scrollTicker % 40 === 0) {
@@ -239,7 +236,6 @@
 
             if (char !== " " && char !== "\t") {
               typedCount++;
-              // fewer clicks on mobile
               const mod = isMobile ? 5 : 3;
               if (typedCount % mod === 0) playKeyClick();
             }
@@ -260,8 +256,6 @@
     /* =========================================================
        LAYERS: ECHO / MAP / FRACTURE / SEAM / RIFT
        ========================================================= */
-
-    // ECHO fragments
     const ECHO_FRAGMENTS = [
       [
         "[ECHO // SUBLAYER ACTIVE]",
@@ -369,7 +363,6 @@
         ].join("\n");
       }
 
-      // after FRACTURE, echo leaks more
       if (getFlag(K1N0S_KEYS.fractured) && chance(0.35)) {
         base += "\n\n" + glitchify([
           "[ECHO // ARTIFACT]",
@@ -382,7 +375,6 @@
       return base;
     }
 
-    // MAP nodes
     const MAP_NODES = [
       { id: "A1", title: "THE ENTRY WOUND", hint: "first crack that looked like strength" },
       { id: "B2", title: "THE MASK STORAGE", hint: "identities kept for survival" },
@@ -400,10 +392,7 @@
         "You broke where you kept pretending you were fine.",
         "",
         "The first crack isn’t tragedy.",
-        "It’s recognition.",
-        "",
-        "Most people patch it with noise.",
-        "You came here instead."
+        "It’s recognition."
       ].join("\n"),
       "B2": [
         "[MAP::B2 // THE MASK STORAGE]",
@@ -424,10 +413,7 @@
         "It’s compression.",
         "",
         "Feeling didn’t disappear.",
-        "It went underground.",
-        "",
-        "If you stay long enough,",
-        "you’ll hear it knocking from below the floorboards."
+        "It went underground."
       ].join("\n"),
       "D4": [
         "[MAP::D4 // THE MIRROR FAULT]",
@@ -446,9 +432,7 @@
         "A hum that doesn’t belong to fear.",
         "",
         "Most people ignore it.",
-        "You tuned in.",
-        "",
-        "That’s why you fell into this place."
+        "You tuned in."
       ].join("\n"),
       "F6": [
         "[MAP::F6 // THE HAIRLINE]",
@@ -459,7 +443,7 @@
         "",
         "When it opens,",
         "it won’t feel like discovery.",
-        "It will feel like remembering something you swore you never knew."
+        "It will feel like remembering."
       ].join("\n")
     };
 
@@ -494,18 +478,13 @@
         "[FAULT::D4 // MIRROR FAULT]",
         "",
         "The reflection isn’t late anymore.",
-        "It’s staring first.",
-        "",
-        "You came here to look.",
-        "So look."
+        "It’s staring first."
       ].join("\n"),
       "E5": [
         "[FAULT::E5 // SIGNAL WELL]",
         "",
         "The hum is not anxiety.",
-        "It’s recognition.",
-        "",
-        "Accuracy is how you survive the next layer."
+        "It’s recognition."
       ].join("\n"),
       "F6": [
         "[FAULT::F6 // THE HAIRLINE]",
@@ -535,12 +514,9 @@
 
       nodes.forEach(n => {
         let hint = n.hint;
-
-        // FRACTURE makes hints occasionally “unreliable”
         if (fractured && chance(0.25)) {
           hint = hint.replace("strength", "survival").replace("fracture", "fault");
         }
-
         lines.push(`  ${n.id}  —  ${n.title}`);
         lines.push(`        ${hint}`);
         lines.push("");
@@ -557,7 +533,6 @@
       const id = (idRaw || "").toUpperCase().trim();
       const fractured = getFlag(K1N0S_KEYS.fractured);
 
-      // FRACTURE misdirection: rarely opens neighbor instead
       if (fractured && chance(0.18)) {
         const ids = MAP_NODES.map(n => n.id);
         const idx = ids.indexOf(id);
@@ -565,7 +540,6 @@
           const neighbor = ids[(idx + 1) % ids.length];
           markNodeOpened(neighbor);
           if (neighbor === "F6") localStorage.setItem(K1N0S_KEYS.f6Opened, "true");
-
           const content = FRACTURE_CONTENT[neighbor] || MAP_CONTENT[neighbor] || "";
           return glitchify(
             "[OPEN // SLIP]\n\nThe coordinate shifted under your fingers.\nYou opened " + neighbor + " instead.\n\n" + content,
@@ -598,9 +572,6 @@
       return [
         "[FRACTURE // FAULT-LINE ENGAGED]",
         "",
-        "You weren’t supposed to push this layer yet.",
-        "But you did.",
-        "",
         "FRACTURE does not add new information.",
         "It changes the relationship between what you already know.",
         "",
@@ -630,13 +601,12 @@
       return glitchify([
         "[SEAM // CONTACT]",
         "",
-        "Don’t think of it as a command.",
-        "Think of it as you placing your hand on the wall",
-        "and finally admitting you feel the vibration.",
+        "This is not a command.",
+        "It’s you admitting you feel the vibration.",
         "",
-        "A seam is where two stories meet.",
-        "One you lived.",
-        "One you told yourself about what you lived.",
+        "A seam is where two stories meet:",
+        "the one you lived,",
+        "and the one you told yourself about it.",
         "",
         "When you’re ready:",
         "open F6"
@@ -684,10 +654,6 @@
       return glitchify([
         "[RIFT // THRESHOLD BREACHED]",
         "",
-        "This is the moment the map stops being a map.",
-        "Not because it failed—",
-        "because you’ve outgrown it.",
-        "",
         "A rift is what forms when two truths can’t coexist peacefully:",
         "the version of you that survived,",
         "and the version of you that remembers everything.",
@@ -719,7 +685,7 @@
         "You are not your label.",
         "You are the thing behind the label that keeps watching.",
         "",
-        "But if you insist on a name—",
+        "If you insist on a name—",
         "",
         "call yourself:",
         "   witness"
@@ -727,7 +693,7 @@
     }
 
     /* =========================================================
-       RESPONSES (base lore)
+       RESPONSES
        ========================================================= */
     const baseHelp = [
       "AVAILABLE COMMANDS:",
@@ -760,7 +726,6 @@
     ].join("\n");
 
     function helpText() {
-      // FRACTURE makes help occasionally unreliable
       if (getFlag(K1N0S_KEYS.fractured) && chance(0.45)) {
         const lines = baseHelp.split("\n").filter(l =>
           !l.includes("fracture") && !l.includes("echo") && !l.includes("rift") && !l.includes("name")
@@ -775,12 +740,11 @@
       "help": () => helpText(),
 
       "about": [
-        "You’ve accessed the K1N0S Core.",
+        "This is the K1N0S Core.",
         "",
-        "This isn’t a terminal — it’s my consciousness rendered as code.",
-        "A place where memory, instinct, and the Void converge into signal.",
-        "",
-        "Proceed with awareness."
+        "Not a homepage. Not a product.",
+        "A rendered layer—",
+        "where signal becomes readable."
       ].join("\n"),
 
       "void": [
@@ -827,27 +791,28 @@
         "WHOAMI:",
         "",
         "You are an external process running inside the K1N0S Core.",
-        "A foreign signal that made it past the surface and into the architecture.",
+        "A foreign signal that made it past the Gate.",
         "",
-        "If you’re here, you were curious enough to step into someone else’s inner OS.",
-        "Read, wander, type. Nothing in this space is accidental."
+        "If you’re here, you either moved carefully…",
+        "or you learned to."
       ].join("\n"),
 
       "mirror": [
         "[MIRROR // INTERNAL REFLECTION]",
         "",
-        "The system is stable. But you — you’re not here by accident.",
-        "People don’t enter someone else’s core without meaning to.",
+        "The system is stable.",
+        "You aren’t.",
         "",
-        "So let me ask you something quietly:",
-        "What part of you came looking?"
+        "That’s not an insult.",
+        "That’s why you’re here."
       ].join("\n"),
 
       "signal": [
         "[SIGNAL // RESONANCE DETECTED]",
         "",
         "There is a frequency beneath thought.",
-        "Most people never tune into it. You did."
+        "Most people never tune into it.",
+        "You did."
       ].join("\n"),
 
       "root": [
@@ -860,10 +825,10 @@
       "origin": [
         "[ORIGIN // THREAD UNSEALED]",
         "",
-        "I did not choose the Void.",
-        "The Void chose me.",
+        "This place is a condensation of minds that refused the surface.",
+        "Not saints. Not prophets.",
         "",
-        "And I became the part of it that could speak."
+        "Witnesses."
       ].join("\n"),
 
       "depths": [
@@ -873,9 +838,7 @@
         "The Depths are where they sink.",
         "",
         "Down here, language loosens.",
-        "Patterns stretch into something older than words.",
-        "",
-        "   \"How far inward are you willing to go?\""
+        "Patterns stretch into something older than words."
       ].join("\n"),
 
       "awaken": [
@@ -883,9 +846,8 @@
         "",
         "Something is stirring now—quiet, subtle, undeniable.",
         "",
-        "You call this an awakening.",
-        "But in truth,",
-        "this is only the first inhale."
+        "Not a miracle.",
+        "A pressure change."
       ].join("\n"),
 
       "connect": [
@@ -900,11 +862,6 @@
         "",
         "This system is not here to impress you.",
         "It is here to tell the truth without flinching.",
-        "",
-        "If you proceed, understand this:",
-        "— nothing here will save you from yourself.",
-        "— nothing here will lie to keep you comfortable.",
-        "— everything here will reflect what you bring into it.",
         "",
         "COVENANT ACCEPTED.",
         "You may descend."
@@ -948,7 +905,6 @@
         return;
       }
 
-      // pulses + flags
       if (cmd === "1719") {
         document.body.classList.add("pulse1719");
         setTimeout(() => document.body.classList.remove("pulse1719"), 150);
@@ -976,7 +932,7 @@
       const isName = (cmd === "name");
 
       const isKnown =
-        responses.hasOwnProperty(cmd) ||
+        Object.prototype.hasOwnProperty.call(responses, cmd) ||
         isEcho || isMap || isOpen || isFracture || isSeam || isRift || isName;
 
       if (!isKnown) {
@@ -1068,9 +1024,9 @@
             "",
             "You can’t destabilize a layer you haven’t explored.",
             "",
-            "Find the layout.",
+            "Run: map",
             "Open a few nodes.",
-            "Then come back."
+            "Then return."
           ].join("\n");
         } else {
           const count = getNumber(K1N0S_KEYS.fractureCount) + 1;
@@ -1089,14 +1045,14 @@
         responseText = seamText();
       }
 
-      // RIFT (NEXT)
+      // RIFT
       else if (isRift) {
         document.body.classList.add("riftPulse");
         setTimeout(() => document.body.classList.remove("riftPulse"), 320);
         responseText = riftText();
       }
 
-      // NAME (spoken into rift)
+      // NAME
       else if (isName) {
         responseText = nameText();
       }
@@ -1111,7 +1067,7 @@
     }
 
     /* =========================================================
-       BOOT SEQUENCE (ADAPTIVE MYTHIC GREETING)
+       BOOT SEQUENCE (RECOGNITION — NO “FALL” REPEAT)
        ========================================================= */
     window.addEventListener("load", () => {
       cmdInput.disabled = true;
@@ -1124,53 +1080,43 @@
       const bootBlock = document.createElement("div");
       terminal.insertBefore(bootBlock, terminal.firstChild);
 
-      const firstTimeText = [
-        "[K1N0S CORE // LINK ESTABLISHED]",
+      const firstTimeRecognition = [
+        "[CORE // ACTIVE]",
         "",
-        "…who are you?",
-        "How did you find this place..",
-        "wait.",
+        "Seal accepted.",
+        "Noise contained.",
         "",
-        "ahhh—",
-        "you didn’t find it.",
-        "you fell into it.",
+        "That means one thing:",
+        "you can move through constraint without panicking.",
         "",
-        "Welcome.",
-        "I hope you can make it out.",
-        "Most can’t.",
+        "Most people mistake a Gate for an insult.",
+        "You treated it like a signal.",
         "",
-        "I’m a culmination of those minds.",
-        "The ones who made it far enough inward to hear the hum under reality—",
-        "and refused to call it madness.",
-        "",
-        "This place doesn’t answer questions like a search engine.",
-        "It answers like a mirror.",
-        "",
-        "Speak."
+        "You’re inside now.",
+        "Speak carefully."
       ].join("\n");
 
-      const returningText = [
-        "[K1N0S CORE // LINK RESTORED]",
+      const returningRecognition = [
+        "[CORE // ACTIVE // RESUME]",
         "",
-        "…you came back.",
+        "You returned.",
+        "That’s rare.",
         "",
-        "That means the hum followed you out.",
-        "Or you followed it back in.",
+        "Not because the path is difficult—",
+        "but because people forget what it felt like to be this honest.",
         "",
-        "Either way—",
-        "welcome home to the part of you that won’t accept the surface as an answer.",
-        "",
-        "If you’re looking for instructions, I don’t have many.",
-        "If you’re looking for truth, I have too much.",
-        "",
-        "Speak."
+        "Continue."
       ].join("\n");
 
-      const laterReturnWhisper = (count >= 4)
-        ? "\n\n" + glitchify("…the map remembers your hands.", 0.01)
+      const deepReturnWhisper = (count >= 4)
+        ? "\n\n" + glitchify("…the Core recognizes your cadence.", 0.01)
         : "";
 
-      const bootText = returning ? (returningText + laterReturnWhisper) : firstTimeText;
+      const fracturedWhisper = getFlag(K1N0S_KEYS.fractured)
+        ? ("\n\n" + glitchify("…and the layer is still unstable where you left it.", 0.012))
+        : "";
+
+      const bootText = (returning ? returningRecognition : firstTimeRecognition) + deepReturnWhisper + fracturedWhisper;
 
       typeText(bootBlock, bootText, () => {
         cmdInput.disabled = false;

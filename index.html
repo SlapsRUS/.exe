@@ -66,7 +66,7 @@
       100%{transform:translate3d(-40px,30px,0);}
     }
 
-    /* matrix drizzle canvas sits behind content */
+    /* matrix drizzle canvas behind content */
     canvas#drizzle{
       position:fixed; inset:0;
       z-index:2;
@@ -136,6 +136,7 @@
       line-height:1.65;
       opacity:.96;
       white-space:pre-wrap;
+      min-height:220px;
     }
 
     .prompt{
@@ -161,7 +162,7 @@
       opacity:.68;
     }
 
-    /* reduced motion: disable animations */
+    /* reduced motion */
     @media (prefers-reduced-motion: reduce){
       .noise, .title::before, .title::after, .caret { animation:none !important; }
       canvas#drizzle{ display:none; }
@@ -190,12 +191,12 @@ checksum unresolved...
     </div>
 
     <div class="hint">
-      If you’re here, it wasn’t an accident.
+      continuation recommended.
     </div>
   </main>
 
   <script>
-    /* ========= Lost OS boot text (light type-in) ========= */
+    /* ========= ENTRY: THE FALL (gravity, not narration) ========= */
     const boot = document.getElementById("boot");
     const gate = document.getElementById("gate");
 
@@ -204,19 +205,12 @@ checksum unresolved...
       "integrity check: partial.",
       "origin header: missing.",
       "",
-      "…who are you?",
-      "How did you find this place..",
-      "wait.",
+      "process resumed outside expected parameters.",
       "",
-      "ahhh—",
-      "you didn’t find it.",
-      "you fell into it.",
+      "state: unstable.",
+      "continuation recommended.",
       "",
-      "Welcome.",
-      "I hope you can make it out.",
-      "Most can’t.",
-      "",
-      "Proceed when you’re ready."
+      "proceed."
     ];
 
     let i = 0, j = 0;
@@ -228,11 +222,11 @@ checksum unresolved...
 
       if (j < line.length){
         boot.textContent += line[j++];
-        setTimeout(tick, 20);
+        setTimeout(tick, 18);
       } else {
         boot.textContent += "\n";
         i++; j = 0;
-        setTimeout(tick, line.length === 0 ? 180 : 110);
+        setTimeout(tick, line.length === 0 ? 170 : 105);
       }
     }
     setTimeout(tick, 260);
@@ -243,9 +237,11 @@ checksum unresolved...
     }
 
     gate.addEventListener("click", go);
-    gate.addEventListener("keydown", (e)=>{ if (e.key === "Enter") go(); });
+    gate.addEventListener("keydown", (e)=>{
+      if (e.key === "Enter") go();
+    });
 
-    /* ========= Subtle matrix drizzle (behind text) ========= */
+    /* ========= Subtle matrix drizzle (behind text; CPU-friendly) ========= */
     const canvas = document.getElementById("drizzle");
     const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -261,8 +257,14 @@ checksum unresolved...
     let cols = Math.floor(canvas.width / fontSize);
     let drops = new Array(cols).fill(0).map(()=> Math.random() * canvas.height / fontSize);
 
+    function rebuild(){
+      cols = Math.floor(canvas.width / fontSize);
+      drops = new Array(cols).fill(0).map(()=> Math.random() * canvas.height / fontSize);
+    }
+    window.addEventListener("resize", rebuild);
+    rebuild();
+
     function step(){
-      // very low alpha for subtle trails
       ctx.fillStyle = "rgba(0,0,0,0.08)";
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
@@ -270,7 +272,6 @@ checksum unresolved...
       ctx.fillStyle = "rgba(212,175,55,0.22)";
 
       for (let x = 0; x < cols; x++){
-        // don’t draw every column every frame (CPU-friendly)
         if (Math.random() < 0.35) continue;
 
         const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
@@ -279,19 +280,12 @@ checksum unresolved...
         ctx.fillText(ch, x * fontSize, y);
 
         if (y > canvas.height && Math.random() < 0.03) drops[x] = 0;
-        drops[x] += 0.6; // slow drizzle
+        drops[x] += 0.6;
       }
 
       requestAnimationFrame(step);
     }
 
-    // refresh columns on resize
-    function rebuild(){
-      cols = Math.floor(canvas.width / fontSize);
-      drops = new Array(cols).fill(0).map(()=> Math.random() * canvas.height / fontSize);
-    }
-    window.addEventListener("resize", rebuild);
-    rebuild();
     step();
   </script>
 </body>

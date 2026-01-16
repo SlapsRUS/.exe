@@ -3,42 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>K1N0S.exe // AUTH</title>
+  <title>K1N0S.exe // GATE</title>
+
   <style>
     :root{
       --gold:#d4af37;
       --bg:#000;
-      --dim:rgba(212,175,55,.16);
-      --line:rgba(212,175,55,.45);
-      --bad:#ff4d4d;
+      --warn:#ff4d4d;
     }
+
     html,body{height:100%;}
+
     body{
       margin:0;
       background:var(--bg);
       color:var(--gold);
-      font-family:"Courier New", Courier, monospace;
-      overflow:hidden;
+      font-family:"Courier New", monospace;
       display:flex;
       align-items:center;
       justify-content:center;
-      transition:filter .18s ease;
+      overflow:hidden;
     }
 
-    /* scanlines */
+    /* CRT scanlines */
     body::before{
       content:"";
       pointer-events:none;
       position:fixed; inset:0;
       background-image:repeating-linear-gradient(
         to bottom,
-        rgba(212,175,55,0.14) 0px,
-        rgba(212,175,55,0.14) 2px,
+        rgba(212,175,55,.12) 0px,
+        rgba(212,175,55,.12) 2px,
         transparent 2px,
         transparent 6px
       );
       opacity:.55;
-      z-index:6;
+      z-index:5;
     }
 
     /* vignette */
@@ -48,150 +48,66 @@
       position:fixed; inset:-20%;
       background:radial-gradient(circle at 50% 45%,
         rgba(0,0,0,0) 0%,
-        rgba(0,0,0,.64) 58%,
+        rgba(0,0,0,.65) 58%,
         rgba(0,0,0,.92) 100%);
-      z-index:7;
-    }
-
-    /* subtle grain */
-    .noise{
-      pointer-events:none;
-      position:fixed; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.36'/%3E%3C/svg%3E");
-      opacity:.10;
-      mix-blend-mode:screen;
-      z-index:4;
-      animation: drift 7s linear infinite;
-    }
-    @keyframes drift{
-      0%{transform:translate3d(0,0,0);}
-      100%{transform:translate3d(-40px,30px,0);}
-    }
-
-    /* found-footage drizzle behind */
-    canvas#drizzle{
-      position:fixed; inset:0;
-      z-index:2;
-      opacity:.18;
+      z-index:6;
     }
 
     .panel{
-      width:min(920px, 94vw);
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap:18px;
-      padding:18px;
-      position:relative;
-      z-index:10;
-      user-select:none;
-    }
-
-    .card{
+      width:min(520px, 92vw);
       border:1px solid rgba(212,175,55,.28);
       border-radius:14px;
       padding:18px;
       background:rgba(0,0,0,.35);
-      box-shadow:0 0 18px rgba(212,175,55,.08);
-      text-shadow:0 0 4px rgba(212,175,55,.9), 0 0 10px rgba(212,175,55,.45);
+      position:relative;
+      z-index:10;
+      text-shadow:0 0 4px rgba(212,175,55,.9);
     }
 
     .sig{
       font-size:12px;
-      letter-spacing:.16em;
+      letter-spacing:.18em;
       text-transform:uppercase;
-      opacity:.92;
-    }
-
-    .title{
-      margin:12px 0 10px;
-      font-size:34px;
-      letter-spacing:.12em;
-      line-height:1.1;
-      display:inline-block;
-      position:relative;
-    }
-    .title::before,
-    .title::after{
-      content:attr(data-text);
-      position:absolute; left:0; top:0;
-      opacity:.30;
-      clip-path: inset(0 0 0 0);
-      pointer-events:none;
-    }
-    .title::before{ transform:translate(1px,0); animation: glitch1 3.6s infinite; }
-    .title::after{  transform:translate(-1px,0); animation: glitch2 4.4s infinite; }
-    @keyframes glitch1{
-      0%,92%,100%{clip-path: inset(0 0 0 0);}
-      93%{clip-path: inset(12% 0 72% 0);}
-      94%{clip-path: inset(62% 0 18% 0);}
-      95%{clip-path: inset(36% 0 44% 0);}
-    }
-    @keyframes glitch2{
-      0%,90%,100%{clip-path: inset(0 0 0 0);}
-      91%{clip-path: inset(70% 0 10% 0);}
-      92%{clip-path: inset(18% 0 66% 0);}
-      93%{clip-path: inset(44% 0 38% 0);}
-    }
-
-    .boot{
-      margin-top:10px;
-      white-space:pre-wrap;
-      line-height:1.65;
-      font-size:15px;
-      opacity:.96;
-      min-height:220px;
+      opacity:.85;
     }
 
     .divider{
       margin:14px 0;
       height:1px;
       background:linear-gradient(90deg, transparent, rgba(212,175,55,.35), transparent);
-      opacity:.85;
     }
 
-    /* keypad area */
-    .lockline{
+    .status{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:12px;
+      align-items:center;
       font-size:12px;
-      letter-spacing:.12em;
+      letter-spacing:.14em;
       text-transform:uppercase;
       opacity:.9;
     }
 
-    .status{
+    .pill{
       padding:6px 10px;
-      border:1px solid rgba(212,175,55,.28);
+      border:1px solid rgba(212,175,55,.35);
       border-radius:999px;
-      opacity:.92;
     }
-    .status.bad{
-      border-color: rgba(255,77,77,.55);
-      color: var(--bad);
-      text-shadow:none;
+    .pill.bad{
+      border-color:rgba(255,77,77,.6);
+      color:var(--warn);
     }
 
-    .codeRow{
-      margin-top:12px;
+    .row{
+      margin-top:14px;
       display:flex;
       gap:10px;
       align-items:center;
     }
 
-    .code{
-      flex:1;
-      display:flex;
-      gap:8px;
-      align-items:center;
-      padding:12px 12px;
-      border:1px solid rgba(212,175,55,.28);
-      border-radius:12px;
-      background:rgba(0,0,0,.5);
+    .prompt{
+      opacity:.9;
     }
 
-    .prompt{opacity:.9;}
     input{
       flex:1;
       background:transparent;
@@ -203,52 +119,38 @@
       letter-spacing:.22em;
     }
 
+    .box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px;
+      border:1px solid rgba(212,175,55,.35);
+      border-radius:12px;
+      background:rgba(0,0,0,.5);
+    }
+
     .btn{
       cursor:pointer;
-      border:1px solid rgba(212,175,55,.35);
-      background:rgba(0,0,0,.35);
+      border:1px solid rgba(212,175,55,.4);
+      background:rgba(0,0,0,.4);
       color:var(--gold);
-      border-radius:12px;
+      border-radius:10px;
       padding:12px 14px;
       font-family:inherit;
       font-size:12px;
       letter-spacing:.14em;
       text-transform:uppercase;
-      transition: transform .12s ease, opacity .12s ease, border-color .12s ease;
-      opacity:.92;
+      opacity:.9;
     }
-    .btn:hover{transform:translateY(-1px); opacity:1; border-color:rgba(212,175,55,.85);}
-    .btn:active{transform:translateY(0); opacity:.95;}
 
-    .grid{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-    }
-    .key{
-      cursor:pointer;
-      border:1px solid rgba(212,175,55,.22);
-      background:rgba(0,0,0,.35);
-      color:var(--gold);
-      border-radius:12px;
-      padding:14px 0;
-      font-size:14px;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      transition: transform .10s ease, opacity .10s ease, border-color .10s ease;
-      opacity:.92;
-    }
-    .key:hover{transform:translateY(-1px); opacity:1; border-color:rgba(212,175,55,.85);}
-    .key:active{transform:translateY(0); opacity:.95;}
-    .key.danger{border-color:rgba(255,77,77,.35); color:rgba(255,77,77,.95);}
-    .key.wide{grid-column: span 2;}
+    .btn:hover{opacity:1;}
+    .btn:active{opacity:.95;}
 
     .hint{
       margin-top:12px;
       font-size:12px;
-      opacity:.65;
-      line-height:1.55;
+      opacity:.6;
+      line-height:1.5;
     }
 
     .shake{
@@ -256,209 +158,88 @@
     }
     @keyframes shake{
       0%{transform:translateX(0);}
-      25%{transform:translateX(5px);}
-      50%{transform:translateX(-5px);}
-      75%{transform:translateX(3px);}
+      25%{transform:translateX(4px);}
+      50%{transform:translateX(-4px);}
+      75%{transform:translateX(2px);}
       100%{transform:translateX(0);}
-    }
-
-    @media (max-width: 860px){
-      .panel{grid-template-columns:1fr;}
-      .boot{min-height:170px;}
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      .noise,.title::before,.title::after{animation:none !important;}
-      canvas#drizzle{display:none;}
-      .shake{animation:none;}
     }
   </style>
 </head>
 
 <body>
-  <canvas id="drizzle" aria-hidden="true"></canvas>
-  <div class="noise" aria-hidden="true"></div>
 
-  <section class="panel" aria-label="K1N0S Authentication">
+  <section class="panel" id="panel">
 
-    <!-- LEFT: Found-footage / lost OS log -->
-    <div class="card">
-      <div class="sig">[AUTH NODE // RECOVERED FRAME]</div>
-      <div class="title" data-text="ACCESS HANDSHAKE">ACCESS HANDSHAKE</div>
+    <div class="sig">[ACCESS GATE // LEGACY SEAL]</div>
 
-      <div class="boot" id="boot">
-init...
-mounting interface...
-reading seal...
-      </div>
+    <div class="divider"></div>
 
-      <div class="divider"></div>
-      <div class="hint">
-        This is not a password prompt. It’s a threshold.<br/>
-        If you’re here, you already crossed the first line.
-      </div>
+    <div class="status">
+      <div>STATE</div>
+      <div class="pill" id="statePill">STABLE</div>
     </div>
 
-    <!-- RIGHT: Cold lab keypad + ancient seal -->
-    <div class="card" id="lockCard">
-      <div class="lockline">
-        <div>[SEAL // NUMERIC]</div>
-        <div class="status" id="statusPill">STABLE</div>
+    <div class="row">
+      <div class="box">
+        <div class="prompt">C:\AUTH&gt;</div>
+        <input id="code" maxlength="8" autocomplete="off" inputmode="numeric" />
       </div>
-
-      <div class="codeRow">
-        <div class="code">
-          <div class="prompt">C:\AUTH&gt;</div>
-          <input id="codeInput" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Access code" />
-        </div>
-        <button class="btn" id="enterBtn">ENTER</button>
-      </div>
-
-      <div class="grid" aria-label="Keypad">
-        <button class="key" data-k="1">1</button>
-        <button class="key" data-k="2">2</button>
-        <button class="key" data-k="3">3</button>
-        <button class="key" data-k="4">4</button>
-        <button class="key" data-k="5">5</button>
-        <button class="key" data-k="6">6</button>
-        <button class="key" data-k="7">7</button>
-        <button class="key" data-k="8">8</button>
-        <button class="key" data-k="9">9</button>
-
-        <button class="key danger wide" id="clearBtn">CLEAR</button>
-        <button class="key" data-k="0">0</button>
-      </div>
-
-      <div class="hint" id="hintLine">
-        Press Enter. Or don’t. Either way, the system remembers attempts.
-      </div>
+      <button class="btn" id="enter">ENTER</button>
     </div>
+
+    <div class="hint" id="hint">
+      Attempts are recorded. Excess noise delays access.
+    </div>
+
   </section>
 
   <script>
-    /* =======================
-       Lost OS boot narrative
-       ======================= */
-    const boot = document.getElementById("boot");
-    const lockCard = document.getElementById("lockCard");
-    const statusPill = document.getElementById("statusPill");
-    const hintLine = document.getElementById("hintLine");
+    /* ========= GATE LOGIC ========= */
 
-    const lines = [
-      "link established.",
-      "integrity check: partial.",
-      "origin header: missing.",
-      "seal protocol: legacy.",
-      "",
-      "…who are you?",
-      "How did you find this place..",
-      "wait.",
-      "",
-      "ahhh— you didn’t find it.",
-      "you fell into it.",
-      "",
-      "If you can open the seal, you can enter.",
-      "If you can enter… I hope you can make it out."
-    ];
+    const panel = document.getElementById("panel");
+    const input = document.getElementById("code");
+    const enter = document.getElementById("enter");
+    const pill = document.getElementById("statePill");
+    const hint = document.getElementById("hint");
 
-    let i = 0, j = 0;
-    function tick(){
-      if (i >= lines.length) return;
-      const line = lines[i];
-      if (j === 0 && i === 0) boot.textContent = "";
-      if (j < line.length){
-        boot.textContent += line[j++];
-        setTimeout(tick, 18);
-      } else {
-        boot.textContent += "\n";
-        i++; j = 0;
-        setTimeout(tick, line.length === 0 ? 170 : 105);
-      }
-    }
-    setTimeout(tick, 240);
-
-    /* =======================
-       Soft “ban” (cooldown)
-       ======================= */
     const KEY = {
-      fails: "k1n0s_login_fails",
-      lockUntil: "k1n0s_login_lock_until"
+      fails: "k1n0s_gate_fails",
+      lockUntil: "k1n0s_gate_lock"
     };
 
-    function now(){ return Date.now(); }
-    function getNum(k){ return parseInt(localStorage.getItem(k) || "0", 10) || 0; }
+    const now = () => Date.now();
+    const getNum = k => parseInt(localStorage.getItem(k) || "0", 10) || 0;
 
-    function setLocked(ms){
+    function setLock(ms){
       localStorage.setItem(KEY.lockUntil, String(now() + ms));
     }
-    function lockedUntil(){
-      return parseInt(localStorage.getItem(KEY.lockUntil) || "0", 10) || 0;
+
+    function locked(){
+      return now() < (parseInt(localStorage.getItem(KEY.lockUntil) || "0", 10));
     }
-    function isLocked(){
-      return now() < lockedUntil();
-    }
+
     function remaining(){
-      return Math.max(0, lockedUntil() - now());
+      return Math.max(0, parseInt(localStorage.getItem(KEY.lockUntil) || "0", 10) - now());
     }
 
-    function setStatus(text, bad=false){
-      statusPill.textContent = text;
-      statusPill.classList.toggle("bad", !!bad);
-    }
-
-    function formatMs(ms){
-      const s = Math.ceil(ms/1000);
-      if (s < 60) return s + "s";
-      const m = Math.ceil(s/60);
-      return m + "m";
-    }
-
-    function applyLockUI(){
-      if (!isLocked()) {
-        setStatus("STABLE", false);
-        hintLine.textContent = "Press Enter. Or don’t. Either way, the system remembers attempts.";
+    function updateState(){
+      if (!locked()){
+        pill.textContent = "STABLE";
+        pill.classList.remove("bad");
         return;
       }
-      setStatus("QUARANTINED", true);
-      hintLine.textContent =
-        "Link destabilized. Cooldown active: " + formatMs(remaining()) +
-        "  //  stop forcing it. breathe.";
+      pill.textContent = "QUARANTINED";
+      pill.classList.add("bad");
+      hint.textContent = "Cooldown active: " + Math.ceil(remaining()/1000) + "s";
     }
 
-    setInterval(applyLockUI, 400);
-    applyLockUI();
-
-    /* =======================
-       Keypad + input
-       ======================= */
-    const codeInput = document.getElementById("codeInput");
-    const enterBtn = document.getElementById("enterBtn");
-    const clearBtn = document.getElementById("clearBtn");
-
-    function appendDigit(d){
-      if (isLocked()) return;
-      if (codeInput.value.length >= codeInput.maxLength) return;
-      codeInput.value += d;
-    }
-
-    function clear(){
-      codeInput.value = "";
-    }
-
-    document.querySelectorAll(".key[data-k]").forEach(btn=>{
-      btn.addEventListener("click", ()=> appendDigit(btn.getAttribute("data-k")));
-    });
-
-    clearBtn.addEventListener("click", ()=>{
-      if (isLocked()) return;
-      clear();
-    });
+    setInterval(updateState, 400);
+    updateState();
 
     function shake(){
-      lockCard.classList.remove("shake");
-      // force reflow
-      void lockCard.offsetWidth;
-      lockCard.classList.add("shake");
+      panel.classList.remove("shake");
+      void panel.offsetWidth;
+      panel.classList.add("shake");
     }
 
     function fail(){
@@ -466,105 +247,45 @@ reading seal...
       localStorage.setItem(KEY.fails, String(fails));
 
       shake();
-      setStatus("REJECTED", true);
+      pill.textContent = "REJECTED";
+      pill.classList.add("bad");
 
-      // escalating cooldown (mythic quarantine)
-      // 1-2: none, 3: 5s, 4: 15s, 5: 45s, 6+: 2m
-      let ms = 0;
-      if (fails === 3) ms = 5000;
-      else if (fails === 4) ms = 15000;
-      else if (fails === 5) ms = 45000;
-      else if (fails >= 6) ms = 120000;
+      let lock = 0;
+      if (fails === 3) lock = 5000;
+      else if (fails === 4) lock = 15000;
+      else if (fails === 5) lock = 45000;
+      else if (fails >= 6) lock = 120000;
 
-      if (ms > 0) setLocked(ms);
+      if (lock) setLock(lock);
 
-      hintLine.textContent =
-        "Rejected. Not because it’s wrong—because you’re loud. " +
-        (ms > 0 ? ("Cooldown: " + formatMs(ms) + ".") : "Try again.");
-
-      // subtle “found footage” corruption
-      if (fails >= 4) {
-        boot.textContent += "\n\n" + [
-          "[FRAME DROP]",
-          "…stop guessing.",
-          "…it was never meant to be brute forced."
-        ].join("\n");
-      }
+      hint.textContent = lock
+        ? "Access delayed."
+        : "Incorrect.";
     }
 
     function success(){
-      setStatus("ACCEPTED", false);
-      hintLine.textContent = "Seal opened. Descending…";
-      document.body.style.filter = "brightness(1.25) contrast(1.6)";
-      setTimeout(()=>{ window.location.href = "terminal.html"; }, 260);
+      localStorage.removeItem(KEY.fails);
+      localStorage.removeItem(KEY.lockUntil);
+      pill.textContent = "ACCEPTED";
+      pill.classList.remove("bad");
+      hint.textContent = "Seal opened.";
+      setTimeout(()=> location.href="terminal.html", 220);
     }
 
     function submit(){
-      if (isLocked()) { applyLockUI(); return; }
-
-      const v = (codeInput.value || "").trim();
-
-      // Your real code:
-      if (v === "1719") {
-        localStorage.removeItem(KEY.fails);
-        localStorage.removeItem(KEY.lockUntil);
-        success();
-      } else {
-        fail();
-      }
+      if (locked()) return updateState();
+      const v = input.value.trim();
+      if (v === "1719") success();
+      else fail();
     }
 
-    enterBtn.addEventListener("click", submit);
-    codeInput.addEventListener("keydown", (e)=>{
+    enter.addEventListener("click", submit);
+    input.addEventListener("keydown", e=>{
       if (e.key === "Enter") submit();
     });
 
-    // focus for desktop
-    window.addEventListener("load", ()=> codeInput.focus());
-
-    /* =======================
-       Subtle drizzle (CPU-friendly)
-       ======================= */
-    const canvas = document.getElementById("drizzle");
-    const ctx = canvas.getContext("2d", { alpha:true });
-
-    function resize(){
-      canvas.width = innerWidth;
-      canvas.height = innerHeight;
-    }
-    addEventListener("resize", resize);
-    resize();
-
-    const glyphs = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
-    const fontSize = 14;
-    let cols = Math.floor(canvas.width / fontSize);
-    let drops = new Array(cols).fill(0).map(()=> Math.random() * canvas.height / fontSize);
-
-    function rebuild(){
-      cols = Math.floor(canvas.width / fontSize);
-      drops = new Array(cols).fill(0).map(()=> Math.random() * canvas.height / fontSize);
-    }
-    addEventListener("resize", rebuild);
-
-    function step(){
-      ctx.fillStyle = "rgba(0,0,0,0.08)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      ctx.font = fontSize + "px Courier New, monospace";
-      ctx.fillStyle = "rgba(212,175,55,0.22)";
-
-      for (let x=0; x<cols; x++){
-        if (Math.random() < 0.35) continue;
-        const ch = glyphs[(Math.random()*glyphs.length)|0];
-        const y = drops[x] * fontSize;
-        ctx.fillText(ch, x*fontSize, y);
-        if (y > canvas.height && Math.random() < 0.03) drops[x] = 0;
-        drops[x] += 0.6;
-      }
-      requestAnimationFrame(step);
-    }
-    rebuild();
-    step();
+    window.onload = ()=> input.focus();
   </script>
+
 </body>
 </html>

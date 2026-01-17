@@ -16,7 +16,7 @@
       transition:filter .18s ease;
     }
 
-    /* CRT / scanlines */
+    /* CRT scanlines */
     body::before{
       content:"";
       pointer-events:none;
@@ -68,7 +68,7 @@
 
 <script>
 /* =========================================================
-   K1N0S TERMINAL — STEP 3 (RECOGNITION) + HELLO COMMAND
+   K1N0S TERMINAL — STEP 4 (CADENCE MEMORY) + HELLO
    ========================================================= */
 
 const terminal = document.getElementById("terminal");
@@ -104,12 +104,20 @@ const K = {
   riftUnlocked: "k1n0s_rift_unlocked",
   riftCount: "k1n0s_rift_count",
 
-  // gate (from login.html Step 2)
+  // gate (from login.html)
   gateFails: "k1n0s_gate_fails",
   gateLock: "k1n0s_gate_lock",
 
-  // new
-  helloCount: "k1n0s_hello_count"
+  // hello
+  helloCount: "k1n0s_hello_count",
+
+  // STEP 4: cadence memory (invisible)
+  cadenceLastAt: "k1n0s_cad_last_at",
+  cadenceDeltas: "k1n0s_cad_deltas",      // JSON array of ms deltas
+  cadenceProfile: "k1n0s_cad_profile",    // swift / steady / hesitant
+  cmdCounts: "k1n0s_cmd_counts",          // JSON map {cmd: count}
+  lastCmd: "k1n0s_last_cmd",
+  repeatStreak: "k1n0s_repeat_streak"     // consecutive same-command count
 };
 
 const getFlag = k => localStorage.getItem(k) === "true";
@@ -162,12 +170,85 @@ function markOpened(id) {
   localStorage.setItem(K.openedNodes, Array.from(set).join(","));
 }
 
-/* normalize command so hello? / hello... works */
+/* normalize so hello? / hello... works */
 function normalizeCommand(rawLower){
   return rawLower
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/[?!.,:;…]+$/g, ""); // strip trailing punctuation
+    .replace(/[?!.,:;…]+$/g, "");
+}
+
+/* =========================
+   STEP 4 — CADENCE MEMORY
+   ========================= */
+function readJSON(key, fallback){
+  try {
+    const v = localStorage.getItem(key);
+    if (!v) return fallback;
+    return JSON.parse(v);
+  } catch {
+    return fallback;
+  }
+}
+function writeJSON(key, value){
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
+function avg(arr){
+  if (!arr || !arr.length) return 0;
+  let s = 0;
+  for (const x of arr) s += x;
+  return s / arr.length;
+}
+
+function computeProfile(msAvg){
+  // tuned to "terminal thinking" cadence, not gaming
+  if (msAvg > 6500) return "hesitant";
+  if (msAvg < 1900) return "swift";
+  return "steady";
+}
+
+function recordCadence(cmd){
+  const now = Date.now();
+  const lastAt = parseInt(localStorage.getItem(K.cadenceLastAt) || "0", 10) || 0;
+
+  if (lastAt > 0) {
+    const delta = Math.max(0, Math.min(now - lastAt, 120000)); // clamp at 2 min
+    let deltas = readJSON(K.cadenceDeltas, []);
+    if (!Array.isArray(deltas)) deltas = [];
+    deltas.push(delta);
+    if (deltas.length > 24) deltas = deltas.slice(deltas.length - 24); // rolling window
+    writeJSON(K.cadenceDeltas, deltas);
+
+    const msAvg = avg(deltas);
+    localStorage.setItem(K.cadenceProfile, computeProfile(msAvg));
+  } else {
+    // first stamp
+    localStorage.setItem(K.cadenceProfile, localStorage.getItem(K.cadenceProfile) || "steady");
+  }
+
+  localStorage.setItem(K.cadenceLastAt, String(now));
+
+  // command counts
+  let counts = readJSON(K.cmdCounts, {});
+  if (!counts || typeof counts !== "object") counts = {};
+  counts[cmd] = (counts[cmd] || 0) + 1;
+  writeJSON(K.cmdCounts, counts);
+
+  // repeat streak
+  const lastCmd = (localStorage.getItem(K.lastCmd) || "");
+  const streak = (cmd === lastCmd) ? (getNum(K.repeatStreak) + 1) : 0;
+  setNum(K.repeatStreak, streak);
+  localStorage.setItem(K.lastCmd, cmd);
+}
+
+function cadenceProfile(){
+  return (localStorage.getItem(K.cadenceProfile) || "steady").toLowerCase();
+}
+
+function cmdCount(cmd){
+  const counts = readJSON(K.cmdCounts, {});
+  return (counts && typeof counts === "object" && counts[cmd]) ? counts[cmd] : 0;
 }
 
 /* =========================
@@ -303,7 +384,7 @@ function helpText() {
   return baseHelp;
 }
 
-/* HELLO response has state + subtle evolution */
+/* HELLO: presence check + now lightly aware of cadence */
 function helloText() {
   const count = getNum(K.helloCount) + 1;
   setNum(K.helloCount, count);
@@ -311,6 +392,9 @@ function helloText() {
   const fractured = getFlag(K.fractured);
   const inDepths = getFlag(K.depthsEntered);
   const hasProtocol = getFlag(K.protocolComplete);
+  const profile = cadenceProfile();
+  const streak = getNum(K.repeatStreak);
+  const helloSeen = cmdCount("hello");
 
   const variants = [];
 
@@ -356,6 +440,58 @@ function helloText() {
     ].join("\n"));
   }
 
+  if (profile === "swift") {
+    variants.push([
+      "[HELLO // CADENCE]",
+      "",
+      "Fast hands.",
+      "Careful mind.",
+      "",
+      "Don’t outrun what you came here to feel."
+    ].join("\n"));
+  } else if (profile === "hesitant") {
+    variants.push([
+      "[HELLO // CADENCE]",
+      "",
+      "You hesitate before you press enter.",
+      "",
+      "That isn’t weakness.",
+      "That’s respect for consequence."
+    ].join("\n"));
+  } else {
+    if (chance(0.45)) {
+      variants.push([
+        "[HELLO // CADENCE]",
+        "",
+        "Steady.",
+        "Measured.",
+        "",
+        "That’s how you survive deep water."
+      ].join("\n"));
+    }
+  }
+
+  if (streak >= 1 && chance(0.55)) {
+    variants.push([
+      "[HELLO // AGAIN]",
+      "",
+      "You’re checking the dark twice.",
+      "",
+      "Whatever you’re looking for—",
+      "it’s still here."
+    ].join("\n"));
+  }
+
+  if (helloSeen >= 3 && chance(0.6)) {
+    variants.push([
+      "[HELLO // RECURRING]",
+      "",
+      "You keep checking the void.",
+      "",
+      "That means you’re still alive in there."
+    ].join("\n"));
+  }
+
   if (fractured) {
     variants.push(glitchify([
       "[HELLO // ARTIFACT]",
@@ -367,23 +503,11 @@ function helloText() {
     ].join("\n"), 0.02));
   }
 
-  // small “myth drip” on repeat hellos
-  if (count >= 3 && chance(0.6)) {
-    variants.push([
-      "[HELLO // RECURRING]",
-      "",
-      "You keep checking the dark.",
-      "",
-      "That means you’re still alive in there."
-    ].join("\n"));
-  }
-
   return variants[Math.floor(Math.random() * variants.length)];
 }
 
 const responses = {
   help: () => helpText(),
-
   hello: () => helloText(),
 
   about: [
@@ -755,6 +879,9 @@ function handleCommand(event) {
   const cmdRaw = raw.toLowerCase();
   const cmd = normalizeCommand(cmdRaw);
 
+  // STEP 4 record (invisible, always)
+  recordCadence(cmd);
+
   cmdInput.disabled = true;
   cmdInput.removeEventListener("keydown", handleCommand);
 
@@ -878,7 +1005,7 @@ function handleCommand(event) {
 }
 
 /* =========================================================
-   BOOT SEQUENCE — RECOGNITION
+   BOOT SEQUENCE — RECOGNITION (now with cadence)
    ========================================================= */
 window.addEventListener("load", () => {
   cmdInput.disabled = true;
@@ -895,6 +1022,12 @@ window.addEventListener("load", () => {
   const fractured = getFlag(K.fractured);
   const rift = getFlag(K.riftUnlocked);
 
+  const profile = cadenceProfile();
+  const cadenceLine =
+    (profile === "swift") ? "Cadence: fast. Controlled."
+    : (profile === "hesitant") ? "Cadence: slow. Deliberate."
+    : "Cadence: steady.";
+
   const bootBlock = document.createElement("div");
   terminal.insertBefore(bootBlock, terminal.firstChild);
 
@@ -908,6 +1041,8 @@ window.addEventListener("load", () => {
     fractured ? "Fault-line state: active." : "Fault-line state: dormant.",
     rift ? "Threshold state: breached." : "Threshold state: sealed.",
     "",
+    cadenceLine,
+    "",
     returning
       ? "Not because the path is difficult—\nbut because people forget what it felt like\nto be this honest."
       : "You’re inside now.\nSpeak carefully.",
@@ -916,7 +1051,7 @@ window.addEventListener("load", () => {
   ].join("\n");
 
   const whisper = (count >= 4)
-    ? "\n\n" + glitchify("…the Core re/ognizes your cadence.", 0.01)
+    ? "\n\n" + glitchify("…the Core recognizes your hands.", 0.01)
     : "";
 
   const bootText = fractured ? glitchify(base, 0.01) + whisper : base + whisper;

@@ -68,7 +68,8 @@
 
 <script>
 /* =========================================================
-   K1N0S TERMINAL — STEP 5 (MAP RESIDUE) — RESTORED LORE
+   K1N0S TERMINAL — STEP 6 (FRACTURE CONSEQUENCES)
+   Additive-only: nothing removed, only layered in.
    ========================================================= */
 
 const terminal = document.getElementById("terminal");
@@ -120,7 +121,12 @@ const K = {
   repeatStreak: "k1n0s_repeat_streak",
 
   // STEP 5: residue
-  nodeVisits: "k1n0s_node_visits" // JSON map {A1: n, ...}
+  nodeVisits: "k1n0s_node_visits", // JSON map {A1: n, ...}
+
+  // STEP 6: fracture consequences (NEW)
+  fractureStage: "k1n0s_fracture_stage",     // 0..3
+  integrity: "k1n0s_integrity",              // 100..0
+  consequenceMarks: "k1n0s_consequence_marks"// JSON map for future expansion
 };
 
 const getFlag = k => localStorage.getItem(k) === "true";
@@ -263,6 +269,76 @@ function bumpNodeVisit(id){
 }
 
 /* =========================
+   STEP 6 — fracture consequences
+   ========================= */
+function getIntegrity(){
+  const v = parseInt(localStorage.getItem(K.integrity) || "100", 10);
+  return Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 100;
+}
+function setIntegrity(v){
+  localStorage.setItem(K.integrity, String(Math.max(0, Math.min(100, v))));
+}
+function getFractureStage(){
+  const s = parseInt(localStorage.getItem(K.fractureStage) || "0", 10);
+  return Number.isFinite(s) ? Math.max(0, Math.min(3, s)) : 0;
+}
+function setFractureStage(s){
+  localStorage.setItem(K.fractureStage, String(Math.max(0, Math.min(3, s))));
+}
+
+/* Escalates consequence slowly, permanently, but never locks features. */
+function escalateFractureConsequences() {
+  // Base on fractureCount + presence in fractured state.
+  const fc = getNum(K.fractureCount);
+  const currentStage = getFractureStage();
+
+  // Stage ladder: 0 (clean) -> 1 -> 2 -> 3
+  let nextStage = currentStage;
+  if (fc >= 1) nextStage = Math.max(nextStage, 1);
+  if (fc >= 2) nextStage = Math.max(nextStage, 2);
+  if (fc >= 4) nextStage = Math.max(nextStage, 3);
+
+  // Integrity decays with fractures, small drift each session after fracture.
+  let integrity = getIntegrity();
+  // when fracture is invoked:
+  integrity = Math.max(0, integrity - (fc === 1 ? 8 : (fc === 2 ? 10 : 12)));
+
+  setFractureStage(nextStage);
+  setIntegrity(integrity);
+}
+
+/* Soft decay each session when fractured (consequence persists). */
+function sessionConsequenceDrift() {
+  if (!getFlag(K.fractured)) return;
+  const stage = getFractureStage();
+  let integrity = getIntegrity();
+
+  // small drift per load; increases with stage
+  const drift = stage === 1 ? 1 : stage === 2 ? 2 : stage === 3 ? 3 : 0;
+  if (drift > 0) {
+    integrity = Math.max(0, integrity - drift);
+    setIntegrity(integrity);
+  }
+}
+
+/* derived probabilities (never removes functionality; just alters “weather”) */
+function consequenceProfile() {
+  const stage = getFractureStage();
+  const integrity = getIntegrity();
+
+  // the lower integrity, the higher distortion
+  const integrityFactor = (100 - integrity) / 100; // 0..1
+
+  const helpDegrade = Math.min(0.82, 0.28 + stage * 0.12 + integrityFactor * 0.22);
+  const mapShuffle = Math.min(0.95, 0.22 + stage * 0.18 + integrityFactor * 0.22);
+  const openSlip = Math.min(0.75, 0.18 + stage * 0.14 + integrityFactor * 0.16);
+  const echoBleed = Math.min(0.85, 0.22 + stage * 0.16 + integrityFactor * 0.20);
+  const microGlitch = Math.min(0.08, 0.015 + stage * 0.015 + integrityFactor * 0.03);
+
+  return { stage, integrity, helpDegrade, mapShuffle, openSlip, echoBleed, microGlitch };
+}
+
+/* =========================
    AUDIO
    ========================= */
 let audioCtx = null;
@@ -354,7 +430,7 @@ function typeText(container, text, onComplete) {
 }
 
 /* =========================================================
-   HELP (expanded, but still clean)
+   HELP (existing + Step 6 adds escalation)
    ========================================================= */
 const baseHelp = [
   "AVAILABLE COMMANDS:",
@@ -388,13 +464,56 @@ const baseHelp = [
 ].join("\n");
 
 function helpText(){
-  if (getFlag(K.fractured) && chance(0.45)) {
-    const lines = baseHelp.split("\n").filter(l =>
-      !l.includes("fracture") && !l.includes("echo") && !l.includes("rift") && !l.includes("name")
-    );
-    lines.splice(lines.length - 4, 0, "…some functions are refusing to be named right now.");
-    return glitchify(lines.join("\n"), 0.012);
+  const fractured = getFlag(K.fractured);
+  const c = consequenceProfile();
+
+  // Original degradation logic remains, Step 6 increases the probability
+  const degrade = fractured && chance(Math.max(0.45, c.helpDegrade));
+
+  if (degrade) {
+    // More aggressive trimming as integrity falls, but we never “delete” the command system.
+    const lines = baseHelp.split("\n");
+
+    // Keep first block always
+    const keep = [];
+    keep.push(lines[0], lines[1], lines[2], lines[3]); // header + first few
+    keep.push("…", "");
+
+    // Remove a few “deep” lines based on stage (display-only)
+    const dropSet = new Set();
+    const stage = c.stage;
+
+    if (stage >= 1) ["echo", "map", "open <id>"].forEach(x => dropSet.add(x));
+    if (stage >= 2) ["fracture", "seam", "rift", "name"].forEach(x => dropSet.add(x));
+    if (stage >= 3) ["origin", "root", "mirror"].forEach(x => dropSet.add(x));
+
+    const filtered = lines.filter(l => {
+      const low = l.toLowerCase();
+      for (const key of dropSet) {
+        if (low.includes(key)) return false;
+      }
+      return true;
+    });
+
+    // Insert refusal lines
+    const insert = [
+      "…some functions are refusing to be named right now.",
+      "…not because they’re gone.",
+      "…because you’re too close."
+    ];
+
+    // Stitch
+    let out = filtered.join("\n");
+    out += "\n\n" + insert.join("\n");
+
+    return glitchify(out, 0.012 + c.microGlitch);
   }
+
+  // small microglitch occasionally after deep fracture
+  if (fractured && c.stage >= 2 && chance(0.22)) {
+    return glitchify(baseHelp, 0.006 + c.microGlitch);
+  }
+
   return baseHelp;
 }
 
@@ -411,6 +530,7 @@ function helloText(){
   const profile = cadenceProfile();
   const streak = getNum(K.repeatStreak);
   const helloSeen = cmdCount("hello");
+  const c = consequenceProfile();
 
   const variants = [];
 
@@ -503,6 +623,19 @@ function helloText(){
     ].join("\n"));
   }
 
+  // Step 6: fractured greeting gets heavier with stage
+  if (fractured && c.stage >= 2 && chance(0.55)) {
+    variants.push(glitchify([
+      "[HELLO // FRACTURE]",
+      "",
+      "You aren’t asking if I’m here.",
+      "You’re asking if you are.",
+      "",
+      "Answer that one.",
+      "Not me."
+    ].join("\n"), 0.015 + c.microGlitch));
+  }
+
   if (fractured) {
     variants.push(glitchify([
       "[HELLO // ARTIFACT]",
@@ -511,14 +644,14 @@ function helloText(){
       "",
       "…it’s you again.",
       "…still trying to prove something is real."
-    ].join("\n"), 0.02));
+    ].join("\n"), 0.02 + c.microGlitch));
   }
 
   return variants[Math.floor(Math.random() * variants.length)];
 }
 
 /* =========================================================
-   RESPONSES — YOUR LONG-FORM LORE RESTORED
+   RESPONSES — LONG-FORM LORE (unchanged)
    ========================================================= */
 const responses = {
   help: () => helpText(),
@@ -768,7 +901,7 @@ const responses = {
 };
 
 /* =========================================================
-   ECHO + MAP SYSTEM
+   ECHO + MAP SYSTEM (Step 6 adds bleed probability)
    ========================================================= */
 const ECHO_FRAGMENTS = [
   ["[ECHO // SUBLAYER ACTIVE]","","You are walking through a hallway you don’t remember building.","Every door has your name on it.","None of them open the same way twice.","","A voice behind the walls repeats:","   \"not yet\""],
@@ -802,13 +935,32 @@ function generateEcho() {
     base += "\n\nThe darkness stops being random.\nIt starts becoming navigable.\n\nSomewhere beneath you,\na map is drawing itself.";
   }
 
-  if (getFlag(K.fractured) && chance(0.35)) {
+  const fractured = getFlag(K.fractured);
+  const c = consequenceProfile();
+
+  // Original artifact leak remains (Step 5)
+  if (fractured && chance(0.35)) {
     base += "\n\n" + glitchify([
       "[ECHO // ARTIFACT]",
       "/// the map is not a map",
       "/// it is a wound diagram",
       "/// seam is visible when you stop trying to name it"
-    ].join("\n"), 0.02);
+    ].join("\n"), 0.02 + c.microGlitch);
+  }
+
+  // Step 6: additional “bleed” lines as consequences escalate
+  if (fractured && chance(c.echoBleed)) {
+    const bleed = [
+      "[BLEED]",
+      "",
+      "…this part wasn’t meant to surface yet.",
+      "…but the fracture doesn’t care about intent.",
+      "",
+      "You don’t need more answers.",
+      "You need more accuracy."
+    ].join("\n");
+
+    base += "\n\n" + glitchify(bleed, 0.012 + c.microGlitch);
   }
 
   return base;
@@ -842,12 +994,17 @@ const FRACTURE_CONTENT = {
   F6: "[FAULT::F6 // THE HAIRLINE]\n\nThe hairline is not a door.\nIt’s a memory seam.\n\nWhen it splits,\neverything you called “you” becomes negotiable."
 };
 
-/* STEP 5: MAP RESIDUE DISPLAY */
+/* STEP 5: MAP RESIDUE DISPLAY (Step 6 adds instability) */
 function renderMap() {
   setFlag(K.mapViewed);
 
   const fractured = getFlag(K.fractured);
-  const nodes = fractured ? shuffled(MAP_NODES) : MAP_NODES;
+  const c = consequenceProfile();
+
+  // Step 6: map shuffles more as consequences escalate
+  const doShuffle = fractured ? chance(Math.max(0.25, c.mapShuffle)) : false;
+
+  const nodes = doShuffle ? shuffled(MAP_NODES) : MAP_NODES;
 
   const opened = new Set(getOpened().map(x => x.toUpperCase()));
   const visitsMap = readJSON(K.nodeVisits, {});
@@ -865,6 +1022,12 @@ function renderMap() {
     lines.push("");
   }
 
+  // Step 6: small integrity hint (no explanation)
+  if (fractured && c.stage >= 2 && chance(0.55)) {
+    lines.push(glitchify("…index integrity is slipping.", 0.01 + c.microGlitch));
+    lines.push("");
+  }
+
   lines.push("NODES:\n");
 
   nodes.forEach(n => {
@@ -878,9 +1041,14 @@ function renderMap() {
       : "   ";
 
     let hint = n.hint;
-    if (fractured && chance(0.25)) hint = hint.replace("strength", "survival").replace("fracture", "fault");
 
-    const residueWhisper = (v >= 3 && chance(0.55)) ? "  (you keep returning here)" : "";
+    // Original fracture hint mutation remains; Step 6 increases frequency slightly
+    const mutateChance = fractured ? Math.min(0.55, 0.25 + c.microGlitch * 10) : 0;
+    if (fractured && chance(mutateChance)) hint = hint.replace("strength", "survival").replace("fracture", "fault");
+
+    // “you keep returning here” becomes slightly more likely with stage
+    const whisperChance = Math.min(0.85, 0.55 + c.stage * 0.08);
+    const residueWhisper = (v >= 3 && fractured && chance(whisperChance)) ? "  (you keep returning here)" : (v >= 3 && chance(0.55) ? "  (you keep returning here)" : "");
 
     lines.push(`  ${marker} ${id}  —  ${n.title}`);
     lines.push(`        ${hint}${residueWhisper}`);
@@ -892,12 +1060,20 @@ function renderMap() {
     : "\nThe map doesn’t move.\nYou do.";
 
   let out = lines.join("\n") + mapWear;
-  return fractured ? glitchify(out, 0.02) : out;
+
+  // Step 6: occasional corruption overlay without removing meaning
+  if (fractured && c.stage >= 3 && chance(0.35)) {
+    out += "\n\n" + glitchify("…some coordinates are remembering you back.", 0.012 + c.microGlitch);
+  }
+
+  return fractured ? glitchify(out, 0.02 + c.microGlitch) : out;
 }
 
-/* STEP 5: OPEN RESIDUE */
+/* STEP 5: OPEN RESIDUE (Step 6 increases slip chance) */
 function openResiduePrefix(id, visitN){
   const profile = cadenceProfile();
+  const fractured = getFlag(K.fractured);
+  const c = consequenceProfile();
 
   if (visitN === 1) return "";
 
@@ -920,7 +1096,12 @@ function openResiduePrefix(id, visitN){
   if (profile === "swift" && chance(0.6)) variants.push("[RESIDUE]\n\nYou’re moving fast.\nThis place isn’t.\n\n");
   if (profile === "hesitant" && chance(0.6)) variants.push("[RESIDUE]\n\nSlow hands.\nYou’re waiting for permission.\n\n");
 
-  if (chance(0.22)) variants.push(glitchify("[RESIDUE]\n\n…stop checking if it’s real.\nit is.\n\n", 0.012));
+  // Step 6: residue can “sting” slightly more after deep fracture
+  if (fractured && c.stage >= 2 && chance(0.45)) {
+    variants.push(glitchify("[RESIDUE]\n\n…you’re not revisiting the node.\nyou’re revisiting yourself.\n\n", 0.01 + c.microGlitch));
+  }
+
+  if (chance(0.22)) variants.push(glitchify("[RESIDUE]\n\n…stop checking if it’s real.\nit is.\n\n", 0.012 + c.microGlitch));
 
   return variants[Math.floor(Math.random() * variants.length)];
 }
@@ -928,27 +1109,33 @@ function openResiduePrefix(id, visitN){
 function openNode(idRaw) {
   const id = (idRaw || "").toUpperCase().trim();
   const fractured = getFlag(K.fractured);
+  const c = consequenceProfile();
 
   const visitN = bumpNodeVisit(id);
 
-  if (fractured && chance(0.18)) {
+  // Step 6: slip chance rises with fracture stage/integrity
+  const slipChance = fractured ? c.openSlip : 0;
+
+  if (fractured && chance(slipChance)) {
     const ids = MAP_NODES.map(n => n.id);
     const idx = ids.indexOf(id);
     if (idx !== -1) {
-      const neighbor = ids[(idx + 1) % ids.length];
+      // drift can jump 1 or 2 nodes at higher stage
+      const jump = (c.stage >= 3 && chance(0.55)) ? 2 : 1;
+      const neighbor = ids[(idx + jump) % ids.length];
       const neighborVisit = bumpNodeVisit(neighbor);
       markOpened(neighbor);
       if (neighbor === "F6") localStorage.setItem(K.f6Opened, "true");
       const content = FRACTURE_CONTENT[neighbor] || MAP_CONTENT[neighbor] || "";
       const prefix = openResiduePrefix(neighbor, neighborVisit);
-      return glitchify("[OPEN // SLIP]\n\nCoordinate shifted.\nOpened " + neighbor + " instead.\n\n" + prefix + content, 0.02);
+      return glitchify("[OPEN // SLIP]\n\nCoordinate shifted.\nOpened " + neighbor + " instead.\n\n" + prefix + content, 0.02 + c.microGlitch);
     }
   }
 
   const content = fractured ? (FRACTURE_CONTENT[id] || null) : (MAP_CONTENT[id] || null);
   if (!content) {
     const miss = "[OPEN // FAILED]\n\nThat coordinate doesn’t exist in this layer.\nNot here.";
-    return fractured ? glitchify(miss, 0.02) : miss;
+    return fractured ? glitchify(miss, 0.02 + c.microGlitch) : miss;
   }
 
   markOpened(id);
@@ -957,7 +1144,7 @@ function openNode(idRaw) {
   const prefix = openResiduePrefix(id, visitN);
   const out = prefix + content;
 
-  return fractured ? glitchify(out, 0.02) : out;
+  return fractured ? glitchify(out, 0.02 + c.microGlitch) : out;
 }
 
 /* FRACTURE / SEAM / RIFT / NAME */
@@ -966,7 +1153,9 @@ function canFracture() {
 }
 
 function fractureText() {
-  return [
+  // Step 6: add a “consequence” footer, but keep original text intact
+  const c = consequenceProfile();
+  const base = [
     "[FRACTURE // FAULT-LINE ENGAGED]",
     "",
     "From here on:",
@@ -979,11 +1168,24 @@ function fractureText() {
     "If you want comfort, stop.",
     "If you want accuracy, continue."
   ].join("\n");
+
+  const footer = [
+    "",
+    "[CONSEQUENCE]",
+    "The system will not revert.",
+    "It will only learn how you break it.",
+    "",
+    "Integrity: " + getIntegrity() + "%",
+    "Stage: " + (c.stage + 1) + "/4"
+  ].join("\n");
+
+  return getFlag(K.fractured) ? glitchify(base + footer, 0.01 + c.microGlitch) : (base + footer);
 }
 
 function seamText() {
   if (!getFlag(K.fractured)) return "[SEAM // NOT VISIBLE]\n\nYou can’t touch a seam from the surface.";
   setFlag(K.seamTouched);
+  const c = consequenceProfile();
   return glitchify([
     "[SEAM // CONTACT]",
     "",
@@ -993,13 +1195,14 @@ function seamText() {
     "",
     "When you’re ready:",
     "open F6"
-  ].join("\n"), 0.015);
+  ].join("\n"), 0.015 + c.microGlitch);
 }
 
 function riftText() {
   const fractured = getFlag(K.fractured);
   const seamTouched = getFlag(K.seamTouched);
   const f6Opened = localStorage.getItem(K.f6Opened) === "true";
+  const c = consequenceProfile();
 
   if (!fractured) return "[RIFT // NOT AVAILABLE]\n\nThere is no rift without a fracture.\nRun: fracture";
   if (!seamTouched) return "[RIFT // SEALED]\n\nYou can’t enter what you haven’t touched.\nRun: seam";
@@ -1018,10 +1221,11 @@ function riftText() {
     "",
     "Speak one word into the rift:",
     "   name"
-  ].join("\n"), 0.012);
+  ].join("\n"), 0.012 + c.microGlitch);
 }
 
 function nameText() {
+  const c = consequenceProfile();
   if (!getFlag(K.riftUnlocked)) return "[NAME // NO CONTEXT]\n\nFind the rift first.";
   return glitchify([
     "[NAME // ACCEPTED]",
@@ -1031,7 +1235,7 @@ function nameText() {
     "",
     "call yourself:",
     "   witness"
-  ].join("\n"), 0.01);
+  ].join("\n"), 0.01 + c.microGlitch);
 }
 
 /* =========================================================
@@ -1145,11 +1349,16 @@ function handleCommand(event) {
     else responseText = openNode(raw.slice(5).trim());
   }
   else if (isFracture) {
-    if (!canFracture()) responseText = "[FRACTURE // DENIED]\n\nExplore the layout first.\nOpen a few nodes.\nThen come back.";
-    else {
+    if (!canFracture()) {
+      responseText = "[FRACTURE // DENIED]\n\nExplore the layout first.\nOpen a few nodes.\nThen come back.";
+    } else {
       const count = getNum(K.fractureCount) + 1;
       setNum(K.fractureCount, count);
       setFlag(K.fractured);
+
+      // Step 6: consequences escalate permanently
+      escalateFractureConsequences();
+
       document.body.classList.add("fracturePulse");
       setTimeout(() => document.body.classList.remove("fracturePulse"), 320);
       responseText = fractureText();
@@ -1171,9 +1380,12 @@ function handleCommand(event) {
 }
 
 /* =========================================================
-   BOOT SEQUENCE — recognition (cadence + residue)
+   BOOT SEQUENCE — recognition (cadence + residue + integrity)
    ========================================================= */
 window.addEventListener("load", () => {
+  // Step 6: session drift if fractured
+  sessionConsequenceDrift();
+
   cmdInput.disabled = true;
   cmdInput.removeEventListener("keydown", handleCommand);
 
@@ -1197,6 +1409,15 @@ window.addEventListener("load", () => {
   const residueCount = Object.keys(readJSON(K.nodeVisits, {}) || {}).length;
   const residueLine = residueCount >= 2 ? "Residue: present." : "Residue: minimal.";
 
+  const c = consequenceProfile();
+  const integrityLine = fractured
+    ? ("Integrity: " + c.integrity + "%.")
+    : "Integrity: stable.";
+
+  const stageLine = fractured
+    ? ("Consequence stage: " + (c.stage + 1) + "/4.")
+    : "Consequence stage: 0/4.";
+
   const bootBlock = document.createElement("div");
   terminal.insertBefore(bootBlock, terminal.firstChild);
 
@@ -1212,6 +1433,8 @@ window.addEventListener("load", () => {
     "",
     cadenceLine,
     residueLine,
+    integrityLine,
+    stageLine,
     "",
     returning
       ? "Not because the path is difficult—\nbut because people forget what it felt like\nto be this honest."
@@ -1220,8 +1443,10 @@ window.addEventListener("load", () => {
     "Continue."
   ].join("\n");
 
-  const finalBoot = fractured ? glitchify(bootText, 0.01) : bootText;
-  const whisper = (count >= 4) ? ("\n\n" + glitchify("…the Core recognizes your hands.", 0.01)) : "";
+  const finalBoot = fractured ? glitchify(bootText, 0.01 + c.microGlitch) : bootText;
+  const whisper = (count >= 4)
+    ? ("\n\n" + glitchify("…the Core recognizes your hands.", 0.01 + c.microGlitch))
+    : "";
 
   typeText(bootBlock, finalBoot + whisper, () => {
     cmdInput.disabled = false;

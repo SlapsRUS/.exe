@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>K1N0S.exe // GATE</title>
+
+  <style>
+    :root{
+      --gold:#d4af37;
+      --bg:#000;
+      --warn:#ff4d4d;
+    }
+
+    html,body{height:100%;}
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--gold);
+      font-family:"Courier New", monospace;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    /* CRT scanlines */
+    body::before{
+      content:"";
+      pointer-events:none;
+      position:fixed; inset:0;
+      background-image:repeating-linear-gradient(
+        to bottom,
+        rgba(212,175,55,.12) 0px,
+        rgba(212,175,55,.12) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      opacity:.55;
+      z-index:5;
+    }
+
+    /* vignette */
+    body::after{
+      content:"";
+      pointer-events:none;
+      position:fixed; inset:-20%;
+      background:radial-gradient(circle at 50% 45%,
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,.65) 58%,
+        rgba(0,0,0,.92) 100%);
+      z-index:6;
+    }
+
+    .panel{
+      width:min(520px, 92vw);
+      border:1px solid rgba(212,175,55,.28);
+      border-radius:14px;
+      padding:18px;
+      background:rgba(0,0,0,.35);
+      position:relative;
+      z-index:10;
+      text-shadow:0 0 4px rgba(212,175,55,.9);
+    }
+
+    .sig{
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      opacity:.85;
+    }
+
+    .divider{
+      margin:14px 0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(212,175,55,.35), transparent);
+    }
+
+    .status{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:12px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      opacity:.9;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border:1px solid rgba(212,175,55,.35);
+      border-radius:999px;
+    }
+    .pill.bad{
+      border-color:rgba(255,77,77,.6);
+      color:var(--warn);
+    }
+
+    .row{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .prompt{
+      opacity:.9;
+    }
+
+    input{
+      flex:1;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:var(--gold);
+      font-family:inherit;
+      font-size:18px;
+      letter-spacing:.22em;
+    }
+
+    .box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px;
+      border:1px solid rgba(212,175,55,.35);
+      border-radius:12px;
+      background:rgba(0,0,0,.5);
+    }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(212,175,55,.4);
+      background:rgba(0,0,0,.4);
+      color:var(--gold);
+      border-radius:10px;
+      padding:12px 14px;
+      font-family:inherit;
+      font-size:12px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      opacity:.9;
+    }
+
+    .btn:hover{opacity:1;}
+    .btn:active{opacity:.95;}
+
+    .hint{
+      margin-top:12px;
+      font-size:12px;
+      opacity:.6;
+      line-height:1.5;
+    }
+
+    .shake{
+      animation: shake .28s linear;
+    }
+    @keyframes shake{
+      0%{transform:translateX(0);}
+      25%{transform:translateX(4px);}
+      50%{transform:translateX(-4px);}
+      75%{transform:translateX(2px);}
+      100%{transform:translateX(0);}
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="panel" id="panel">
+
+    <div class="sig">[ACCESS GATE // LEGACY SEAL]</div>
+
+    <div class="divider"></div>
+
+    <div class="status">
+      <div>STATE</div>
+      <div class="pill" id="statePill">STABLE</div>
+    </div>
+
+    <div class="row">
+      <div class="box">
+        <div class="prompt">C:\AUTH&gt;</div>
+        <input id="code" maxlength="8" autocomplete="off" inputmode="numeric" />
+      </div>
+      <button class="btn" id="enter">ENTER</button>
+    </div>
+
+    <div class="hint" id="hint">
+      Attempts are recorded. Excess noise delays access.
+    </div>
+
+  </section>
+
+  <script>
+    /* ========= GATE LOGIC ========= */
+
+    const panel = document.getElementById("panel");
+    const input = document.getElementById("code");
+    const enter = document.getElementById("enter");
+    const pill = document.getElementById("statePill");
+    const hint = document.getElementById("hint");
+
+    const KEY = {
+      fails: "k1n0s_gate_fails",
+      lockUntil: "k1n0s_gate_lock"
+    };
+
+    const now = () => Date.now();
+    const getNum = k => parseInt(localStorage.getItem(k) || "0", 10) || 0;
+
+    function setLock(ms){
+      localStorage.setItem(KEY.lockUntil, String(now() + ms));
+    }
+
+    function locked(){
+      return now() < (parseInt(localStorage.getItem(KEY.lockUntil) || "0", 10));
+    }
+
+    function remaining(){
+      return Math.max(0, parseInt(localStorage.getItem(KEY.lockUntil) || "0", 10) - now());
+    }
+
+    function updateState(){
+      if (!locked()){
+        pill.textContent = "STABLE";
+        pill.classList.remove("bad");
+        return;
+      }
+      pill.textContent = "QUARANTINED";
+      pill.classList.add("bad");
+      hint.textContent = "Cooldown active: " + Math.ceil(remaining()/1000) + "s";
+    }
+
+    setInterval(updateState, 400);
+    updateState();
+
+    function shake(){
+      panel.classList.remove("shake");
+      void panel.offsetWidth;
+      panel.classList.add("shake");
+    }
+
+    function fail(){
+      const fails = getNum(KEY.fails) + 1;
+      localStorage.setItem(KEY.fails, String(fails));
+
+      shake();
+      pill.textContent = "REJECTED";
+      pill.classList.add("bad");
+
+      let lock = 0;
+      if (fails === 3) lock = 5000;
+      else if (fails === 4) lock = 15000;
+      else if (fails === 5) lock = 45000;
+      else if (fails >= 6) lock = 120000;
+
+      if (lock) setLock(lock);
+
+      hint.textContent = lock
+        ? "Access delayed."
+        : "Incorrect.";
+    }
+
+    function success(){
+      localStorage.removeItem(KEY.fails);
+      localStorage.removeItem(KEY.lockUntil);
+      pill.textContent = "ACCEPTED";
+      pill.classList.remove("bad");
+      hint.textContent = "Seal opened.";
+      setTimeout(()=> location.href="terminal.html", 220);
+    }
+
+    function submit(){
+      if (locked()) return updateState();
+      const v = input.value.trim();
+      if (v === "1719") success();
+      else fail();
+    }
+
+    enter.addEventListener("click", submit);
+    input.addEventListener("keydown", e=>{
+      if (e.key === "Enter") submit();
+    });
+
+    window.onload = ()=> input.focus();
+  </script>
+
+</body>
+</html>
